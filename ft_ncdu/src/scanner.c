@@ -31,7 +31,7 @@ off_t calculate_dir_recursive(const char *dir_path, size_t *items_count, off_t *
 
         if (lstat(sub_path, &st) == -1) continue;
 
-        /* Filesystem boundary guard */
+        /* Filesystem boundary guard (prevent hopping into remote NFS or root) */
         if (st.st_dev != g_state.root_dev) continue;
 
         if (items_count) (*items_count)++;
@@ -158,6 +158,7 @@ static void *async_scan_orchestrator(void *arg) {
     g_state.selected = 0;
     g_state.scroll_offset = 0;
     g_state.unreadable_count = 0;
+    g_state.broken_links_count = 0;
     safe_str_copy(g_state.current_dir, path, sizeof(g_state.current_dir));
     pthread_mutex_unlock(&g_state.lock);
 
@@ -183,17 +184,35 @@ static void *async_scan_orchestrator(void *arg) {
         FileEntry *fe = &g_state.entries[g_state.count];
         safe_str_copy(fe->name, entry->d_name, sizeof(fe->name));
         safe_str_copy(fe->path, full_path, sizeof(fe->path));
+        fe->symlink_target[0] = '\0';
         fe->mode = st.st_mode;
         fe->mtime = st.st_mtime;
         fe->dev = st.st_dev;
         fe->ino = st.st_ino;
         fe->marked = 0;
+        fe->is_broken_link = 0;
+        fe->is_goinfre_link = 0;
         fe->items_count = 1;
 
         if (S_ISLNK(st.st_mode)) {
             fe->type = TYPE_LINK;
             fe->size = 0;
             fe->disk_size = 0;
+
+            ssize_t rlen = readlink(full_path, fe->symlink_target, sizeof(fe->symlink_target) - 1);
+            if (rlen > 0) {
+                fe->symlink_target[rlen] = '\0';
+            }
+
+            struct stat target_st;
+            if (stat(full_path, &target_st) != 0) {
+                fe->is_broken_link = 1;
+                g_state.broken_links_count++;
+            }
+
+            if (strstr(fe->symlink_target, "goinfre") != NULL) {
+                fe->is_goinfre_link = 1;
+            }
         } else if (S_ISDIR(st.st_mode)) {
             fe->type = TYPE_DIR;
             fe->size = 0;
@@ -260,3 +279,4 @@ void start_async_scan(const char *path) {
     pthread_create(&orchestrator, NULL, async_scan_orchestrator, path_copy);
     pthread_detach(orchestrator);
 }
+

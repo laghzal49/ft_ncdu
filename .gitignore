@@ -8,3 +8,12 @@ wheels/
 
 # Virtual environments
 .venv
+
+# C build artifacts & binaries
+*.o
+obj/
+ft_ncdu/obj/
+ft_ncdu/ft_ncdu
+ft_ncdu
+quota_report.md
+

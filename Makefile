@@ -1,37 +1,19 @@
-NAME        = ft_ncdu
-
-CC          = gcc
-CFLAGS      = -Wall -Wextra -Werror -O3 -march=native -Iincludes
-LDFLAGS     = -lncurses -pthread
-
-SRC_DIR     = src
-OBJ_DIR     = obj
-
-SRCS        = $(SRC_DIR)/main.c \
-              $(SRC_DIR)/scanner.c \
-              $(SRC_DIR)/actions.c \
-              $(SRC_DIR)/ui.c \
-              $(SRC_DIR)/utils.c
-
-OBJS        = $(SRCS:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.o)
-
-all: $(NAME)
-
-$(NAME): $(OBJS)
-	$(CC) $(CFLAGS) $(OBJS) -o $(NAME) $(LDFLAGS)
-
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c | $(OBJ_DIR)
-	$(CC) $(CFLAGS) -c $< -o $@
-
-$(OBJ_DIR):
-	mkdir -p $(OBJ_DIR)
+all:
+	@$(MAKE) -C ft_ncdu
 
 clean:
-	rm -rf $(OBJ_DIR)
+	@$(MAKE) -C ft_ncdu clean
 
-fclean: clean
-	rm -f $(NAME)
+fclean:
+	@$(MAKE) -C ft_ncdu fclean
 
-re: fclean all
+re:
+	@$(MAKE) -C ft_ncdu re
 
-.PHONY: all clean fclean re
+install:
+	@$(MAKE) -C ft_ncdu install
+
+uninstall:
+	@$(MAKE) -C ft_ncdu uninstall
+
+.PHONY: all clean fclean re install uninstall

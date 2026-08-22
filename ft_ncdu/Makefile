@@ -34,4 +34,14 @@ fclean: clean
 
 re: fclean all
 
-.PHONY: all clean fclean re
+install: $(NAME)
+	mkdir -p $(HOME)/.local/bin
+	cp -f $(NAME) $(HOME)/.local/bin/$(NAME)
+	@echo "Installed ft_ncdu to $(HOME)/.local/bin/$(NAME)"
+
+uninstall:
+	rm -f $(HOME)/.local/bin/$(NAME)
+	@echo "Uninstalled ft_ncdu from $(HOME)/.local/bin/$(NAME)"
+
+.PHONY: all clean fclean re install uninstall
+

@@ -14,6 +14,7 @@
 #include <sys/types.h>
 #include <pwd.h>
 #include <time.h>
+#include <locale.h>
 #include <signal.h>
 #include <pthread.h>
 #include <ncurses.h>
@@ -41,8 +42,9 @@ typedef enum {
 typedef struct {
     char        name[256];
     char        path[PATH_MAX_LEN];
-    off_t       size;         /* Apparent size */
-    off_t       disk_size;    /* Allocated disk size (st_blocks * 512) */
+    char        symlink_target[PATH_MAX_LEN];
+    off_t       size;
+    off_t       disk_size;
     size_t      items_count;
     mode_t      mode;
     time_t      mtime;
@@ -50,6 +52,8 @@ typedef struct {
     ino_t       ino;
     EntryType   type;
     int         marked;
+    int         is_broken_link;
+    int         is_goinfre_link;
 } FileEntry;
 
 typedef struct {
@@ -73,6 +77,7 @@ typedef struct {
     volatile int    abort_scan;
     int             spinner_frame;
     size_t          unreadable_count;
+    size_t          broken_links_count;
     dev_t           root_dev;
     pthread_mutex_t lock;
 } AppState;
@@ -95,6 +100,7 @@ void    render_graph_bar(char *out, size_t out_len, off_t size, off_t max_size, 
 int     is_protected_target(const char *path);
 int     count_marked_items(void);
 void    format_breadcrumbs(const char *path, char *out, size_t max_len);
+char    *shell_escape(const char *str);
 
 /* scanner.c */
 off_t   calculate_dir_recursive(const char *dir_path, size_t *items_count, off_t *out_disk_size, int depth);
@@ -108,8 +114,10 @@ int     confirm_modal(const char *title, const char *message);
 void    show_help_modal(void);
 void    action_delete(void);
 void    action_symlink_goinfre(void);
+void    action_unlink_goinfre(void);
 void    action_bootstrap_goinfre(void);
 void    action_heal_symlinks(void);
+void    action_empty_trash(void);
 void    action_nuke_junk(void);
 void    action_git_doctor(void);
 void    action_docker_prune(void);
@@ -121,6 +129,16 @@ void    action_goto_path(void);
 void    action_inject_zshrc(void);
 void    action_edit(void);
 void    action_shell(void);
+void    action_batch_invert(void);
+void    action_batch_unmark(void);
+
+/* Headless CLI functions */
+int     run_cli_clean(void);
+int     run_cli_heal(void);
+int     run_cli_bootstrap(void);
+int     run_cli_report(const char *target_path);
+void    print_cli_help(const char *prog_name);
+void    print_cli_version(void);
 
 /* ui.c */
 void    init_ui_colors(void);

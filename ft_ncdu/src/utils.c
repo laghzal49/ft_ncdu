@@ -9,15 +9,21 @@ void safe_str_copy(char *dest, const char *src, size_t dest_size) {
 }
 
 void format_size(off_t bytes, char *out, size_t out_len) {
-    const char *units[] = {"B", "KB", "MB", "GB", "TB"};
+    const char *units[] = {"B ", "KB", "MB", "GB", "TB", "PB"};
     double sz = (double)bytes;
     int unit_idx = 0;
 
-    while (sz >= 1024.0 && unit_idx < 4) {
+    while (sz >= 1024.0 && unit_idx < 5) {
         sz /= 1024.0;
         unit_idx++;
     }
-    snprintf(out, out_len, "%6.1f %-2s", sz, units[unit_idx]);
+    if (unit_idx == 0) {
+        snprintf(out, out_len, "%5lld %s", (long long)bytes, units[unit_idx]);
+    } else if (sz < 10.0) {
+        snprintf(out, out_len, "%5.2f %s", sz, units[unit_idx]);
+    } else {
+        snprintf(out, out_len, "%5.1f %s", sz, units[unit_idx]);
+    }
 }
 
 void format_permissions(mode_t mode, char *out) {
@@ -40,30 +46,38 @@ void render_gauge(char *out, size_t out_len, double percent, int width) {
     if (filled > width) filled = width;
     if (filled < 0) filled = 0;
 
-    char bar[256];
-    int idx = 0;
-    for (int i = 0; i < width && idx < 250; i++) {
-        bar[idx++] = (i < filled) ? '#' : '-';
+    char bar[512] = {0};
+    int bpos = 0;
+    for (int i = 0; i < width && bpos < 480; i++) {
+        if (i < filled) {
+            strcat(bar, "■");
+            bpos += 3;
+        } else {
+            strcat(bar, "·");
+            bpos += 2;
+        }
     }
-    bar[idx] = '\0';
-    snprintf(out, out_len, "[%s] %5.1f%%", bar, percent);
+    snprintf(out, out_len, "%s %5.1f%%", bar, percent);
 }
 
 void render_graph_bar(char *out, size_t out_len, off_t size, off_t max_size, int bar_width) {
-    if (bar_width <= 0 || out_len < (size_t)bar_width + 8) return;
+    if (bar_width <= 0 || out_len < 64) return;
     int filled = (max_size > 0) ? (int)(((double)size / (double)max_size) * bar_width) : 0;
     if (filled > bar_width) filled = bar_width;
 
-    char bar[128];
-    int i;
-    for (i = 0; i < bar_width && i < 120; i++) {
-        bar[i] = (i < filled) ? '#' : ' ';
+    char bar[256] = {0};
+    for (int i = 0; i < bar_width; i++) {
+        if (i < filled) {
+            strcat(bar, "■");
+        } else {
+            strcat(bar, " ");
+        }
     }
-    bar[i] = '\0';
     snprintf(out, out_len, "[%s]", bar);
 }
 
 int is_protected_target(const char *path) {
+    if (!path) return 1;
     const char *base = strrchr(path, '/');
     base = base ? base + 1 : path;
     for (size_t i = 0; G_PROTECTED_TARGETS[i] != NULL; i++) {
@@ -75,8 +89,8 @@ int is_protected_target(const char *path) {
 int count_marked_items(void) {
     int total = 0;
     pthread_mutex_lock(&g_state.lock);
-    for (int i = 0; i < g_state.filtered_count; i++) {
-        if (g_state.filtered[i].marked) total++;
+    for (int i = 0; i < g_state.count; i++) {
+        if (g_state.entries[i].marked) total++;
     }
     pthread_mutex_unlock(&g_state.lock);
     return total;
@@ -100,3 +114,26 @@ void format_breadcrumbs(const char *path, char *out, size_t max_len) {
         safe_str_copy(out, temp, max_len);
     }
 }
+
+char *shell_escape(const char *str) {
+    if (!str) return strdup("''");
+    size_t len = strlen(str);
+    char *escaped = malloc(len * 4 + 3);
+    if (!escaped) return NULL;
+    char *p = escaped;
+    *p++ = '\'';
+    for (size_t i = 0; i < len; i++) {
+        if (str[i] == '\'') {
+            *p++ = '\'';
+            *p++ = '\\';
+            *p++ = '\'';
+            *p++ = '\'';
+        } else {
+            *p++ = str[i];
+        }
+    }
+    *p++ = '\'';
+    *p = '\0';
+    return escaped;
+}
+

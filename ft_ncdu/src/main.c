@@ -3,23 +3,28 @@
 AppState g_state;
 
 static const CommandBinding G_COMMANDS[] = {
-    {'s', "Symlink Goinfre", "Move directory to /goinfre and symlink", action_symlink_goinfre},
-    {'H', "Heal Links",      "Repair broken symlinks on new station",   action_heal_symlinks},
-    {'b', "Bootstrap Tools", "Auto-link AI/Rust/Docker/NPM to goinfre", action_bootstrap_goinfre},
-    {'Z', "Inject ~/.zshrc", "Inject cache redirection env vars",       action_inject_zshrc},
-    {'C', "Clean Presets",   "Open modular cleaning preset picker",     action_cleaning_presets},
-    {'K', "Nuke Junk",       "Wipe build outputs, caches & core dumps", action_nuke_junk},
-    {'G', "Git Doctor",      "Run git clean -fdx & aggressive gc",      action_git_doctor},
-    {'D', "Docker Prune",    "Execute docker system prune -a --volumes",action_docker_prune},
-    {'p', "Peek File",       "Quick file content previewer",            action_file_peek},
-    {'P', "Goto Path",       "Teleport jump to arbitrary directory",    action_goto_path},
-    {':', "Goto Path",       "Teleport jump to arbitrary directory",    action_goto_path},
-    {'!', "Custom Command",  "Execute shell command with target path",  action_custom_command},
-    {'E', "Export Report",   "Dump Markdown storage audit",             action_export_report},
-    {'e', "Edit in Neovim",  "Open selected file/folder in $EDITOR",    action_edit},
-    {'t', "Subshell",        "Drop into interactive terminal shell",    action_shell},
-    {'?', "Help Menu",       "Display interactive keyboard reference",  show_help_modal},
-    {0,   NULL,              NULL,                                      NULL}
+    {'s', "Symlink Goinfre", "Move target to /goinfre and symlink",     action_symlink_goinfre},
+    {'u', "Unlink Goinfre",  "Restore target from goinfre back to HOME", action_unlink_goinfre},
+    {'H', "Heal Links",      "Repair broken symlinks on new station",    action_heal_symlinks},
+    {'b', "Bootstrap Tools", "Auto-link AI/Rust/Docker/NPM to goinfre",  action_bootstrap_goinfre},
+    {'T', "Empty Trash",     "Purge ~/.local/share/Trash & ~/.Trash",    action_empty_trash},
+    {'Z', "Inject ~/.zshrc", "Inject cache redirection env vars",        action_inject_zshrc},
+    {'C', "Clean Presets",   "Open modular cleaning preset picker",      action_cleaning_presets},
+    {'K', "Nuke Junk",       "Wipe build outputs, caches & core dumps",  action_nuke_junk},
+    {'G', "Git Doctor",      "Run git clean -fdx & aggressive gc",       action_git_doctor},
+    {'D', "Docker Prune",    "Execute docker system prune -a --volumes", action_docker_prune},
+    {'p', "Peek File",       "Scrollable file previewer with line nums", action_file_peek},
+    {'P', "Goto Path",       "Teleport jump to arbitrary directory",     action_goto_path},
+    {':', "Goto Path",       "Teleport jump to arbitrary directory",     action_goto_path},
+    {'!', "Custom Command",  "Execute shell command with target path",   action_custom_command},
+    {'E', "Export Report",   "Dump Markdown storage audit",              action_export_report},
+    {'e', "Edit in $EDITOR", "Open selected file/folder in $EDITOR",     action_edit},
+    {'t', "Subshell",        "Drop into interactive terminal shell",     action_shell},
+    {'v', "Invert Marks",    "Invert all selection marks",               action_batch_invert},
+    {'M', "Invert Marks",    "Invert all selection marks",               action_batch_invert},
+    {'U', "Unmark All",      "Clear all selection marks",                action_batch_unmark},
+    {'?', "Help Menu",       "Display interactive keyboard reference",   show_help_modal},
+    {0,   NULL,              NULL,                                       NULL}
 };
 
 static void handle_signal(int sig) {
@@ -31,6 +36,29 @@ static void handle_signal(int sig) {
 }
 
 int main(int argc, char **argv) {
+    /* 1. Parse Command-Line Flags (Headless Mode) */
+    if (argc > 1) {
+        if (strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "--help") == 0) {
+            print_cli_help(argv[0]);
+            return 0;
+        } else if (strcmp(argv[1], "-v") == 0 || strcmp(argv[1], "--version") == 0) {
+            print_cli_version();
+            return 0;
+        } else if (strcmp(argv[1], "-c") == 0 || strcmp(argv[1], "--clean") == 0) {
+            return run_cli_clean();
+        } else if (strcmp(argv[1], "--heal") == 0) {
+            return run_cli_heal();
+        } else if (strcmp(argv[1], "--bootstrap") == 0) {
+            return run_cli_bootstrap();
+        } else if (strcmp(argv[1], "--report") == 0) {
+            const char *target = (argc > 2) ? argv[2] : (getenv("HOME") ? getenv("HOME") : ".");
+            return run_cli_report(target);
+        }
+    }
+
+    /* 2. Initialize UTF-8 locale for Unicode block characters */
+    setlocale(LC_ALL, "");
+
     struct sigaction sa;
     sa.sa_handler = handle_signal;
     sigemptyset(&sa.sa_mask);
@@ -48,7 +76,7 @@ int main(int argc, char **argv) {
     }
 
     char start_path[PATH_MAX_LEN];
-    if (argc > 1) {
+    if (argc > 1 && argv[1][0] != '-') {
         if (!realpath(argv[1], start_path)) {
             safe_str_copy(start_path, argv[1], sizeof(start_path));
         }
@@ -75,6 +103,7 @@ int main(int argc, char **argv) {
     g_state.abort_scan = 0;
     g_state.spinner_frame = 0;
     g_state.unreadable_count = 0;
+    g_state.broken_links_count = 0;
 
     start_async_scan(start_path);
 
@@ -101,7 +130,7 @@ int main(int argc, char **argv) {
             continue;
         }
 
-        /* 1. Live Filter Input Handling */
+        /* Search input handling */
         if (g_state.is_searching) {
             if (ch == 27 || ch == 10) {
                 g_state.is_searching = 0;
@@ -128,7 +157,7 @@ int main(int argc, char **argv) {
             continue;
         }
 
-        /* 2. Navigation & Feature Controls */
+        /* Navigation controls */
         if (ch == 'j' || ch == KEY_DOWN) {
             if (g_state.selected < g_state.filtered_count - 1) {
                 g_state.selected++;
@@ -143,8 +172,20 @@ int main(int argc, char **argv) {
                     g_state.scroll_offset--;
                 }
             }
-        } else if (ch == 'g') {
-            if (g_pressed) {
+        } else if (ch == KEY_NPAGE) {
+            g_state.selected += list_h;
+            if (g_state.selected >= g_state.filtered_count) g_state.selected = g_state.filtered_count - 1;
+            g_state.scroll_offset += list_h;
+            if (g_state.scroll_offset > g_state.filtered_count - list_h) {
+                g_state.scroll_offset = (g_state.filtered_count > list_h) ? (g_state.filtered_count - list_h) : 0;
+            }
+        } else if (ch == KEY_PPAGE) {
+            g_state.selected -= list_h;
+            if (g_state.selected < 0) g_state.selected = 0;
+            g_state.scroll_offset -= list_h;
+            if (g_state.scroll_offset < 0) g_state.scroll_offset = 0;
+        } else if (ch == 'g' || ch == KEY_HOME) {
+            if (g_pressed || ch == KEY_HOME) {
                 g_state.selected = 0;
                 g_state.scroll_offset = 0;
                 g_pressed = 0;
@@ -152,11 +193,14 @@ int main(int argc, char **argv) {
                 g_pressed = 1;
                 continue;
             }
-        } else if (ch == 'G') {
+        } else if (ch == 'G' || ch == KEY_END) {
             if (g_state.filtered_count > 0) {
                 g_state.selected = g_state.filtered_count - 1;
                 g_state.scroll_offset = (g_state.filtered_count > list_h) ? (g_state.filtered_count - list_h) : 0;
             }
+        } else if (ch == '~') {
+            const char *home = getenv("HOME");
+            if (home) start_async_scan(home);
         } else if (ch == ' ') {
             if (g_state.filtered_count > 0) {
                 pthread_mutex_lock(&g_state.lock);
@@ -239,3 +283,4 @@ int main(int argc, char **argv) {
     endwin();
     return 0;
 }
+
