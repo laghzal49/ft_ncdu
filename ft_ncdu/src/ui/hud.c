@@ -14,54 +14,53 @@
 
 void	render_gauge(char *buf, double pct, int width)
 {
-	int		filled;
-	int		i;
-	int		pos;
+	int	filled;
+	int	i;
 
-	if (width < 4)
-		width = 4;
+	if (width < 2)
+		width = 2;
+	if (width > 20)
+		width = 20;
 	filled = (int)((pct / 100.0) * width);
 	if (filled > width)
 		filled = width;
 	if (filled < 0)
 		filled = 0;
-	pos = snprintf(buf, 16, "[");
+	buf[0] = '[';
 	i = 0;
-	while (i < filled && pos < 40)
-		buf[pos++] = '#';
-	while (i < width && pos < 50)
-	{
-		buf[pos++] = '.';
-		i++;
-	}
-	snprintf(buf + pos, 16, "] %4.1f%%", pct);
+	while (i < filled)
+		buf[1 + i++] = '#';
+	while (i < width)
+		buf[1 + i++] = '.';
+	buf[1 + width] = ']';
+	buf[2 + width] = ' ';
+	snprintf(buf + 3 + width, 16, "%4.1f%%", pct);
 }
 
 void	render_graph_bar(char *buf, off_t val, off_t max, int w)
 {
 	int		filled;
 	int		i;
-	int		pos;
 	double	pct;
 
-	if (w < 4)
-		w = 4;
+	if (w < 2)
+		w = 2;
+	if (w > 16)
+		w = 16;
 	pct = 0.0;
 	if (max > 0)
 		pct = (double)val / (double)max;
 	filled = (int)(pct * w);
 	if (filled > w)
 		filled = w;
-	pos = snprintf(buf, 16, "[");
+	buf[0] = '[';
 	i = 0;
-	while (i < filled && pos < 40)
-		buf[pos++] = '#';
-	while (i < w && pos < 50)
-	{
-		buf[pos++] = '.';
-		i++;
-	}
-	snprintf(buf + pos, 16, "]");
+	while (i < filled)
+		buf[1 + i++] = '#';
+	while (i < w)
+		buf[1 + i++] = '.';
+	buf[1 + w] = ']';
+	buf[2 + w] = '\0';
 }
 
 static void	render_home_card(t_rect r, double h_pct)

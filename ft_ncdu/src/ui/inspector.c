@@ -14,20 +14,25 @@
 
 static void	render_link_status(t_rect r, t_file_entry *cur, int rx, int rw)
 {
+	int	w_lim;
+
 	if (cur->type != TYPE_LINK)
 		return ;
+	w_lim = rw - 22;
+	if (w_lim < 4)
+		w_lim = 4;
 	if (cur->is_broken_link)
 	{
 		attron(COLOR_PAIR(4) | A_BOLD);
 		mvprintw(r.y + 7, rx, "Link -> : %.*s [DEAD LINK!]",
-			rw - 22, cur->symlink_target);
+			w_lim, cur->symlink_target);
 		wattroff(stdscr, COLOR_PAIR(4) | A_BOLD);
 	}
 	else
 	{
 		attron(COLOR_PAIR(2));
 		mvprintw(r.y + 7, rx, "Link -> : %.*s [HEALTHY]",
-			rw - 22, cur->symlink_target);
+			w_lim, cur->symlink_target);
 		wattroff(stdscr, COLOR_PAIR(2));
 	}
 }
@@ -38,16 +43,20 @@ static void	render_target_metadata(t_rect r, t_file_entry *cur,
 	char	perms[16];
 	char	sz_buf[32];
 	off_t	eff_sz;
+	int		nw;
 
 	format_permissions(cur->mode, perms);
 	eff_sz = cur->size;
 	if (g_state.size_mode == SIZE_ACTUAL_DISK)
 		eff_sz = cur->disk_size;
 	snprintf(sz_buf, sizeof(sz_buf), "%lld Bytes", (long long)eff_sz);
+	nw = rw - 10;
+	if (nw < 4)
+		nw = 4;
 	attron(COLOR_PAIR(1) | A_BOLD);
 	mvprintw(r.y + 1, rx, "TARGET METADATA");
 	wattroff(stdscr, COLOR_PAIR(1) | A_BOLD);
-	mvprintw(r.y + 2, rx, "Name    : %.*s", rw - 10, cur->name);
+	mvprintw(r.y + 2, rx, "Name    : %.*s", nw, cur->name);
 	mvprintw(r.y + 3, rx, "Items   : %zu items", cur->items_count);
 	mvprintw(r.y + 4, rx, "Size    : %s", sz_buf);
 	mvprintw(r.y + 5, rx, "Perms   : %s (%04o)", perms, cur->mode & 0777);
