@@ -16,4 +16,8 @@ install:
 uninstall:
 	@$(MAKE) -C ft_ncdu uninstall
 
-.PHONY: all clean fclean re install uninstall
+norm:
+	@$(MAKE) -C ft_ncdu norm
+
+.PHONY: all clean fclean re install uninstall norm
+

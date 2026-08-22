@@ -1,7 +1,7 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   config.h                                           :+:      :+:    :+:   */
+/*   presets.h                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: laghzal <laghzal@student.1337.ma>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
@@ -10,17 +10,16 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef CONFIG_H
-# define CONFIG_H
+#ifndef PRESETS_H
+# define PRESETS_H
 
-# define APP_NAME "ft_ncdu"
-# define APP_VERSION "2.0.0"
-# define APP_TITLE "FT_NCDU v2.0.0 (42/1337 EDITION)"
+# include "ft_ncdu.h"
 
-# define MAX_ENTRIES 65536
-# define PATH_MAX_LEN 4096
-# define NAME_MAX_LEN 256
-# define SCAN_THREADS 16
-# define TICK_DELAY_MS 50
+# define PRESET_COUNT 8
+
+extern const t_clean_preset	g_clean_presets[PRESET_COUNT];
+extern const char			*g_bootstrap_targets[];
+extern const char			*g_protected_paths[];
+extern const char			*g_shell_exports[];
 
 #endif

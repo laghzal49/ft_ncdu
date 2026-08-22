@@ -1,0 +1,8 @@
+*.o
+*.a
+ft_ncdu
+ntcl13
+clean42
+obj/
+quota_report.md
+.DS_Store

@@ -11,9 +11,12 @@ wheels/
 
 # C build artifacts & binaries
 *.o
+*.a
 obj/
 ft_ncdu/obj/
-ft_ncdu/ft_ncdu
-ft_ncdu
+/ft_ncdu/ft_ncdu
+/ft_ncdu/ntcl13
+/ft_ncdu/clean42
 quota_report.md
+
 
