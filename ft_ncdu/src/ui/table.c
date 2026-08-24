@@ -3,115 +3,119 @@
 /*                                                        :::      ::::::::   */
 /*   table.c                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: laghzal <laghzal@student.1337.ma>          +#+  +:+       +#+        */
+/*   By: tlaghzal <tlaghzal@student.1337.ma>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/08/22 22:45:00 by laghzal           #+#    #+#             */
-/*   Updated: 2026/08/22 22:45:00 by laghzal          ###   ########.fr       */
+/*   Created: 2026/08/22 22:45:00 by tlaghzal          #+#    #+#             */
+/*   Updated: 2026/08/24 22:00:00 by tlaghzal         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ft_ncdu.h"
 
-static void	get_type_info(t_file_entry *fe, int *badge, const char **b_str)
+static void	get_type_info(t_file_entry *entry, int *badge_color,
+		const char **badge_label)
 {
-	*badge = 10;
-	*b_str = "FILE";
-	if (fe->type == TYPE_DIR)
+	*badge_color = 10;
+	*badge_label = "FILE";
+	if (entry->type == TYPE_DIR)
 	{
-		*badge = 8;
-		*b_str = "DIR ";
+		*badge_color = 8;
+		*badge_label = "DIR ";
 	}
-	else if (fe->type == TYPE_LINK)
+	else if (entry->type == TYPE_LINK)
 	{
-		if (fe->is_broken_link)
+		if (entry->is_broken_link)
 		{
-			*badge = 12;
-			*b_str = "DEAD";
+			*badge_color = 12;
+			*badge_label = "DEAD";
 		}
 		else
 		{
-			*badge = 9;
-			*b_str = "LINK";
+			*badge_color = 9;
+			*badge_label = "LINK";
 		}
 	}
 }
 
-static void	render_row_active(int y, t_file_entry *fe, int split_x,
-		const char *sz)
+static void	render_row_active(int row_y, t_file_entry *entry, int split_x,
+		const char *size_str)
 {
-	int			badge;
-	const char	*b_str;
-	char		graph[32];
-	int			nw;
+	int			badge_color;
+	const char	*badge_label;
+	char		bar_graph[32];
+	int			name_width;
 
-	nw = split_x - 36;
-	if (nw < 4)
-		nw = 4;
-	render_graph_bar(graph, fe->disk_size, g_state.max_item_size, 8);
-	get_type_info(fe, &badge, &b_str);
+	name_width = split_x - 36;
+	if (name_width < 4)
+		name_width = 4;
+	render_graph_bar(bar_graph, entry->disk_size, g_state.max_item_size, 8);
+	get_type_info(entry, &badge_color, &badge_label);
 	attron(COLOR_PAIR(5) | A_BOLD);
-	if (fe->marked)
-		mvprintw(y, 1, " ❯ ✔ ");
+	if (entry->marked)
+		mvprintw(row_y, 1, " ❯ ✔ ");
 	else
-		mvprintw(y, 1, " ❯   ");
-	attron(COLOR_PAIR(badge));
-	printw(" %s ", b_str);
-	attroff(COLOR_PAIR(badge));
+		mvprintw(row_y, 1, " ❯   ");
+	attron(COLOR_PAIR(badge_color));
+	printw(" %s ", badge_label);
+	attroff(COLOR_PAIR(badge_color));
 	attron(COLOR_PAIR(5) | A_BOLD);
-	printw(" %s %s %-*.*s", sz, graph, nw, nw, fe->name);
+	printw(" %s %s %-*.*s", size_str, bar_graph, name_width, name_width,
+		entry->name);
 	wattroff(stdscr, COLOR_PAIR(5) | A_BOLD);
 }
 
-static void	render_row_inactive(int y, t_file_entry *fe, int split_x,
-		const char *sz)
+static void	render_row_inactive(int row_y, t_file_entry *entry, int split_x,
+		const char *size_str)
 {
-	int			badge;
-	const char	*b_str;
-	char		graph[32];
-	int			nw;
+	int			badge_color;
+	const char	*badge_label;
+	char		bar_graph[32];
+	int			name_width;
 
-	nw = split_x - 36;
-	if (nw < 4)
-		nw = 4;
-	render_graph_bar(graph, fe->disk_size, g_state.max_item_size, 8);
-	get_type_info(fe, &badge, &b_str);
-	if (fe->marked)
-		mvprintw(y, 1, "   ✔ ");
+	name_width = split_x - 36;
+	if (name_width < 4)
+		name_width = 4;
+	render_graph_bar(bar_graph, entry->disk_size, g_state.max_item_size, 8);
+	get_type_info(entry, &badge_color, &badge_label);
+	if (entry->marked)
+		mvprintw(row_y, 1, "   ✔ ");
 	else
-		mvprintw(y, 1, "     ");
-	attron(COLOR_PAIR(badge));
-	printw(" %s ", b_str);
-	attroff(COLOR_PAIR(badge));
-	if (fe->type == TYPE_DIR)
+		mvprintw(row_y, 1, "     ");
+	attron(COLOR_PAIR(badge_color));
+	printw(" %s ", badge_label);
+	attroff(COLOR_PAIR(badge_color));
+	if (entry->type == TYPE_DIR)
 		attron(COLOR_PAIR(1));
-	printw(" %s %s %-*.*s", sz, graph, nw, nw, fe->name);
-	if (fe->type == TYPE_DIR)
+	printw(" %s %s %-*.*s", size_str, bar_graph, name_width, name_width,
+		entry->name);
+	if (entry->type == TYPE_DIR)
 		attroff(COLOR_PAIR(1));
 }
 
-void	render_file_table(t_rect r, int split_x)
+void	render_file_table(t_rect rect, int split_x)
 {
-	int				i;
-	int				idx;
-	char			sz[16];
-	t_file_entry	*fe;
+	int				row_idx;
+	int				item_idx;
+	char			size_str[16];
+	t_file_entry	*entry;
 
-	draw_box(r, " FINDER EXPLORER", 1);
+	draw_box(rect, " FINDER EXPLORER", 1);
 	attron(COLOR_PAIR(14) | A_BOLD);
-	mvprintw(r.y + 1, 2, "ST  TYPE     SIZE     ALLOCATION %%       NAME");
+	mvprintw(rect.y + 1, 2, "ST  TYPE     SIZE     ALLOCATION %%       NAME");
 	wattroff(stdscr, COLOR_PAIR(14) | A_BOLD);
 	pthread_mutex_lock(&g_state.lock);
-	i = 0;
-	while (i < r.h - 3 && (g_state.scroll_offset + i) < g_state.filtered_count)
+	row_idx = 0;
+	while (row_idx < rect.h - 3
+		&& (g_state.scroll_offset + row_idx) < g_state.filtered_count)
 	{
-		idx = g_state.scroll_offset + i;
-		fe = &g_state.filtered[idx];
-		format_size(fe->disk_size, sz, sizeof(sz));
-		if (idx == g_state.selected)
-			render_row_active(r.y + 2 + i, fe, split_x, sz);
+		item_idx = g_state.scroll_offset + row_idx;
+		entry = &g_state.filtered[item_idx];
+		format_size(entry->disk_size, size_str, sizeof(size_str));
+		if (item_idx == g_state.selected)
+			render_row_active(rect.y + 2 + row_idx, entry, split_x, size_str);
 		else
-			render_row_inactive(r.y + 2 + i, fe, split_x, sz);
-		i++;
+			render_row_inactive(rect.y + 2 + row_idx, entry, split_x, size_str);
+		row_idx++;
 	}
 	pthread_mutex_unlock(&g_state.lock);
 }

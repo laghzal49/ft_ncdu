@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   scanner.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: laghzal <laghzal@student.1337.ma>          +#+  +:+       +#+        */
+/*   By: tlaghzal <tlaghzal@student.1337.ma>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/08/22 22:45:00 by laghzal           #+#    #+#             */
-/*   Updated: 2026/08/22 22:45:00 by laghzal          ###   ########.fr       */
+/*   Created: 2026/08/22 22:45:00 by tlaghzal          #+#    #+#             */
+/*   Updated: 2026/08/24 22:00:00 by tlaghzal         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,75 +14,85 @@
 
 void	*scan_thread_worker(void *arg);
 
-static void	init_single_entry(t_file_entry *e, struct dirent *de,
-		const char *dir_path)
+static void	populate_file_entry(t_file_entry *entry, struct dirent *item,
+		const char *parent_dir)
 {
-	struct stat	st;
+	struct stat	stat_info;
 
-	memset(e, 0, sizeof(t_file_entry));
-	safe_str_copy(e->name, de->d_name, NAME_MAX_LEN);
-	snprintf(e->path, PATH_MAX_LEN, "%.2048s/%.256s", dir_path, de->d_name);
-	if (lstat(e->path, &st) == 0)
+	memset(entry, 0, sizeof(t_file_entry));
+	safe_str_copy(entry->name, item->d_name, NAME_MAX_LEN);
+	snprintf(entry->path, PATH_MAX_LEN, "%.2048s/%.256s", parent_dir,
+		item->d_name);
+	if (lstat(entry->path, &stat_info) == 0)
 	{
-		e->size = st.st_size;
-		e->disk_size = st.st_blocks * 512;
-		e->mtime = st.st_mtime;
-		e->mode = st.st_mode;
-		if (S_ISDIR(st.st_mode))
-			e->type = TYPE_DIR;
-		else if (S_ISLNK(st.st_mode))
-			e->type = TYPE_LINK;
-		check_symlink_health(e);
+		entry->size = stat_info.st_size;
+		entry->disk_size = stat_info.st_blocks * 512;
+		entry->mtime = stat_info.st_mtime;
+		entry->mode = stat_info.st_mode;
+		if (S_ISDIR(stat_info.st_mode))
+			entry->type = TYPE_DIR;
+		else if (S_ISLNK(stat_info.st_mode))
+			entry->type = TYPE_LINK;
+		check_symlink_health(entry);
 		g_state.count++;
 	}
 }
 
-static void	read_dir_entries(DIR *d, const char *dir_path)
+static void	read_directory_children(DIR *dir_handle, const char *dir_path)
 {
-	struct dirent	*de;
+	struct dirent	*item;
 
-	de = readdir(d);
-	while (de && g_state.count < MAX_ENTRIES)
+	item = readdir(dir_handle);
+	while (item && g_state.count < MAX_ENTRIES)
 	{
-		if (strcmp(de->d_name, ".") != 0 && strcmp(de->d_name, "..") != 0)
-			init_single_entry(&g_state.entries[g_state.count], de, dir_path);
-		de = readdir(d);
+		if (strcmp(item->d_name, ".") != 0 && strcmp(item->d_name, "..") != 0)
+			populate_file_entry(&g_state.entries[g_state.count], item,
+				dir_path);
+		item = readdir(dir_handle);
 	}
+}
+
+static void	run_worker_threads(void)
+{
+	pthread_t	threads[SCAN_THREADS];
+	int			thread_idx;
+
+	thread_idx = -1;
+	while (++thread_idx < SCAN_THREADS)
+		pthread_create(&threads[thread_idx], NULL, scan_thread_worker,
+			(void *)(intptr_t)thread_idx);
+	while (--thread_idx >= 0)
+		pthread_join(threads[thread_idx], NULL);
 }
 
 static void	*async_scan_orchestrator(void *arg)
 {
-	DIR			*d;
-	char		*path;
-	pthread_t	th[SCAN_THREADS];
-	int			i;
+	DIR		*dir_handle;
+	char	*target_path;
 
-	path = (char *)arg;
-	d = opendir(path);
-	if (!d)
+	target_path = (char *)arg;
+	dir_handle = opendir(target_path);
+	if (dir_handle)
 	{
-		g_state.is_scanning = 0;
-		free(path);
-		return (NULL);
+		read_directory_children(dir_handle, target_path);
+		closedir(dir_handle);
+		apply_filter();
+		run_worker_threads();
+		apply_filter();
 	}
-	read_dir_entries(d, path);
-	closedir(d);
-	apply_filter();
-	i = -1;
-	while (++i < SCAN_THREADS)
-		pthread_create(&th[i], NULL, scan_thread_worker, (void *)(intptr_t)i);
-	while (--i >= 0)
-		pthread_join(th[i], NULL);
-	apply_filter();
 	g_state.is_scanning = 0;
-	free(path);
+	free(target_path);
 	return (NULL);
 }
 
-static void	reset_scan_counters(const char *dir_path)
+void	start_async_scan(const char *dir_path)
 {
-	struct stat	st;
+	pthread_t	thread_id;
+	struct stat	stat_info;
 
+	g_state.abort_scan = 1;
+	while (g_state.is_scanning)
+		usleep(1000);
 	pthread_mutex_lock(&g_state.lock);
 	g_state.count = 0;
 	g_state.filtered_count = 0;
@@ -91,27 +101,13 @@ static void	reset_scan_counters(const char *dir_path)
 	g_state.total_dir_size = 0;
 	g_state.total_disk_usage = 0;
 	g_state.max_item_size = 0;
-	g_state.unreadable_count = 0;
-	g_state.broken_links_count = 0;
 	g_state.root_dev = 0;
-	if (stat(dir_path, &st) == 0)
-		g_state.root_dev = st.st_dev;
+	if (stat(dir_path, &stat_info) == 0)
+		g_state.root_dev = stat_info.st_dev;
 	safe_str_copy(g_state.current_dir, dir_path, PATH_MAX_LEN);
 	g_state.abort_scan = 0;
 	g_state.is_scanning = 1;
 	pthread_mutex_unlock(&g_state.lock);
-}
-
-void	start_async_scan(const char *dir_path)
-{
-	pthread_t	tid;
-	char		*path_copy;
-
-	g_state.abort_scan = 1;
-	while (g_state.is_scanning)
-		usleep(1000);
-	reset_scan_counters(dir_path);
-	path_copy = strdup(dir_path);
-	pthread_create(&tid, NULL, async_scan_orchestrator, (void *)path_copy);
-	pthread_detach(tid);
+	pthread_create(&thread_id, NULL, async_scan_orchestrator, strdup(dir_path));
+	pthread_detach(thread_id);
 }

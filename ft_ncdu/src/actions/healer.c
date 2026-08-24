@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   healer.c                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: laghzal <laghzal@student.1337.ma>          +#+  +:+       +#+        */
+/*   By: tlaghzal <tlaghzal@student.1337.ma>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/08/22 22:45:00 by laghzal           #+#    #+#             */
-/*   Updated: 2026/08/22 22:45:00 by laghzal          ###   ########.fr       */
+/*   Created: 2026/08/22 22:45:00 by tlaghzal          #+#    #+#             */
+/*   Updated: 2026/08/24 22:00:00 by tlaghzal         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,26 +14,27 @@
 
 void	action_heal_symlinks(void)
 {
-	const char	*home;
+	const char	*home_dir;
 	char		*esc_home;
-	char		*cmd;
+	char		*command_str;
 
-	home = getenv("HOME");
-	if (!home || !confirm_modal("HEAL LINKS", "Repair dangling goinfre links?"))
+	home_dir = getenv("HOME");
+	if (!home_dir
+		|| !confirm_modal("HEAL LINKS", "Repair dangling goinfre links?"))
 		return ;
-	esc_home = shell_escape(home);
+	esc_home = shell_escape(home_dir);
 	if (esc_home)
 	{
-		cmd = NULL;
-		if (asprintf(&cmd, "find %s -maxdepth 4 -type l -exec sh -c '"
+		command_str = NULL;
+		if (asprintf(&command_str, "find %s -maxdepth 4 -type l -exec sh -c '"
 				"for link; do target=$(readlink \"$link\"); "
 				"case \"$target\" in /goinfre/*|/sgoinfre/*|/tmp/goinfre_*) "
 				"if [ ! -e \"$link\" ]; then mkdir -p \"$target\"; fi;; "
 				"esac; done' sh {} + 2>/dev/null", esc_home) != -1)
 		{
-			if (system(cmd))
+			if (system(command_str))
 				(void)0;
-			free(cmd);
+			free(command_str);
 		}
 		free(esc_home);
 	}
@@ -49,79 +50,75 @@ void	action_empty_trash(void)
 	start_async_scan(g_state.current_dir);
 }
 
-static int	is_zshrc_injected(const char *path)
+static int	is_zshrc_injected(const char *zshrc_path)
 {
-	FILE	*fp;
-	char	line[512];
-	int		found;
+	FILE	*file_handle;
+	char	line_buffer[512];
+	int		is_found;
 
-	fp = fopen(path, "r");
-	if (!fp)
+	file_handle = fopen(zshrc_path, "r");
+	if (!file_handle)
 		return (0);
-	found = 0;
-	while (fgets(line, sizeof(line), fp))
+	is_found = 0;
+	while (fgets(line_buffer, sizeof(line_buffer), file_handle))
 	{
-		if (strstr(line, "Goinfre Quota Bypass") != NULL)
+		if (strstr(line_buffer, "Goinfre Quota Bypass") != NULL)
 		{
-			found = 1;
+			is_found = 1;
 			break ;
 		}
 	}
-	fclose(fp);
-	return (found);
+	fclose(file_handle);
+	return (is_found);
 }
 
 void	action_inject_zshrc(void)
 {
-	const char	*home;
-	char		path[PATH_MAX_LEN];
-	FILE		*fp;
-	size_t		i;
+	const char	*home_dir;
+	char		zshrc_path[PATH_MAX_LEN];
+	FILE		*file_handle;
+	size_t		idx;
 
-	home = getenv("HOME");
-	if (!home)
+	home_dir = getenv("HOME");
+	if (!home_dir)
 		return ;
-	snprintf(path, sizeof(path), "%.2048s/.zshrc", home);
-	if (is_zshrc_injected(path))
+	snprintf(zshrc_path, sizeof(zshrc_path), "%.2048s/.zshrc", home_dir);
+	if (is_zshrc_injected(zshrc_path))
 	{
 		confirm_modal("INFO", "Goinfre exports already in ~/.zshrc!");
 		return ;
 	}
 	if (!confirm_modal("INJECT ~/.zshrc", "Append goinfre exports?"))
 		return ;
-	fp = fopen(path, "a");
-	if (!fp)
+	file_handle = fopen(zshrc_path, "a");
+	if (!file_handle)
 		return ;
-	fprintf(fp, "\n");
-	i = 0;
-	while (g_shell_exports[i] != NULL)
-		fprintf(fp, "%s\n", g_shell_exports[i++]);
-	fclose(fp);
+	fprintf(file_handle, "\n");
+	idx = 0;
+	while (g_shell_exports[idx] != NULL)
+		fprintf(file_handle, "%s\n", g_shell_exports[idx++]);
+	fclose(file_handle);
 	confirm_modal("SUCCESS", "Injected! Run: source ~/.zshrc");
 }
 
 void	action_bootstrap_goinfre(void)
 {
-	char		bg[PATH_MAX_LEN];
-	const char	*home;
-	char		*cmd;
-	size_t		i;
+	char	bg[PATH_MAX_LEN];
+	char	*cmd;
+	size_t	i;
 
 	if (!confirm_modal("BOOTSTRAP", "Link AI models & tools to goinfre?"))
 		return ;
 	get_goinfre_path(bg, sizeof(bg));
-	home = getenv("HOME");
-	if (!home)
-		return ;
 	i = 0;
 	while (g_bootstrap_targets[i] != NULL)
 	{
 		if (asprintf(&cmd,
-				"mkdir -p $(dirname %s/%s) && mv %s/%s %s/%s && "
-				"ln -s %s/%s %s/%s",
-				bg, g_bootstrap_targets[i], home, g_bootstrap_targets[i],
-				bg, g_bootstrap_targets[i], bg, g_bootstrap_targets[i],
-				home, g_bootstrap_targets[i]) != -1 && system(cmd))
+				"mkdir -p $(dirname %s/%s) && mv ~/%s %s/%s "
+				"&& ln -s %s/%s ~/%s",
+				bg, g_bootstrap_targets[i], g_bootstrap_targets[i], bg,
+				g_bootstrap_targets[i], bg, g_bootstrap_targets[i],
+				g_bootstrap_targets[i]) != -1 && system(cmd))
 			free(cmd);
 		i++;
 	}

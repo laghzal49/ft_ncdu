@@ -1,0 +1,452 @@
+[
+  {
+    "file": "src/main.c",
+    "arguments": [
+      "/usr/bin/gcc",
+      "-Wall",
+      "-Wextra",
+      "-Werror",
+      "-O3",
+      "-march=native",
+      "-Iincludes",
+      "-c",
+      "src/main.c",
+      "-o",
+      "obj/main.o"
+    ],
+    "directory": "/home/laghzal/1337-space/ft_ncdu",
+    "output": "obj/main.o"
+  },
+  {
+    "file": "src/core/scanner.c",
+    "arguments": [
+      "/usr/bin/gcc",
+      "-Wall",
+      "-Wextra",
+      "-Werror",
+      "-O3",
+      "-march=native",
+      "-Iincludes",
+      "-c",
+      "src/core/scanner.c",
+      "-o",
+      "obj/core/scanner.o"
+    ],
+    "directory": "/home/laghzal/1337-space/ft_ncdu",
+    "output": "obj/core/scanner.o"
+  },
+  {
+    "file": "src/core/worker.c",
+    "arguments": [
+      "/usr/bin/gcc",
+      "-Wall",
+      "-Wextra",
+      "-Werror",
+      "-O3",
+      "-march=native",
+      "-Iincludes",
+      "-c",
+      "src/core/worker.c",
+      "-o",
+      "obj/core/worker.o"
+    ],
+    "directory": "/home/laghzal/1337-space/ft_ncdu",
+    "output": "obj/core/worker.o"
+  },
+  {
+    "file": "src/core/nav.c",
+    "arguments": [
+      "/usr/bin/gcc",
+      "-Wall",
+      "-Wextra",
+      "-Werror",
+      "-O3",
+      "-march=native",
+      "-Iincludes",
+      "-c",
+      "src/core/nav.c",
+      "-o",
+      "obj/core/nav.o"
+    ],
+    "directory": "/home/laghzal/1337-space/ft_ncdu",
+    "output": "obj/core/nav.o"
+  },
+  {
+    "file": "src/core/events.c",
+    "arguments": [
+      "/usr/bin/gcc",
+      "-Wall",
+      "-Wextra",
+      "-Werror",
+      "-O3",
+      "-march=native",
+      "-Iincludes",
+      "-c",
+      "src/core/events.c",
+      "-o",
+      "obj/core/events.o"
+    ],
+    "directory": "/home/laghzal/1337-space/ft_ncdu",
+    "output": "obj/core/events.o"
+  },
+  {
+    "file": "src/core/dispatch.c",
+    "arguments": [
+      "/usr/bin/gcc",
+      "-Wall",
+      "-Wextra",
+      "-Werror",
+      "-O3",
+      "-march=native",
+      "-Iincludes",
+      "-c",
+      "src/core/dispatch.c",
+      "-o",
+      "obj/core/dispatch.o"
+    ],
+    "directory": "/home/laghzal/1337-space/ft_ncdu",
+    "output": "obj/core/dispatch.o"
+  },
+  {
+    "file": "src/actions/delete.c",
+    "arguments": [
+      "/usr/bin/gcc",
+      "-Wall",
+      "-Wextra",
+      "-Werror",
+      "-O3",
+      "-march=native",
+      "-Iincludes",
+      "-c",
+      "src/actions/delete.c",
+      "-o",
+      "obj/actions/delete.o"
+    ],
+    "directory": "/home/laghzal/1337-space/ft_ncdu",
+    "output": "obj/actions/delete.o"
+  },
+  {
+    "file": "src/actions/goinfre.c",
+    "arguments": [
+      "/usr/bin/gcc",
+      "-Wall",
+      "-Wextra",
+      "-Werror",
+      "-O3",
+      "-march=native",
+      "-Iincludes",
+      "-c",
+      "src/actions/goinfre.c",
+      "-o",
+      "obj/actions/goinfre.o"
+    ],
+    "directory": "/home/laghzal/1337-space/ft_ncdu",
+    "output": "obj/actions/goinfre.o"
+  },
+  {
+    "file": "src/actions/healer.c",
+    "arguments": [
+      "/usr/bin/gcc",
+      "-Wall",
+      "-Wextra",
+      "-Werror",
+      "-O3",
+      "-march=native",
+      "-Iincludes",
+      "-c",
+      "src/actions/healer.c",
+      "-o",
+      "obj/actions/healer.o"
+    ],
+    "directory": "/home/laghzal/1337-space/ft_ncdu",
+    "output": "obj/actions/healer.o"
+  },
+  {
+    "file": "src/actions/presets.c",
+    "arguments": [
+      "/usr/bin/gcc",
+      "-Wall",
+      "-Wextra",
+      "-Werror",
+      "-O3",
+      "-march=native",
+      "-Iincludes",
+      "-c",
+      "src/actions/presets.c",
+      "-o",
+      "obj/actions/presets.o"
+    ],
+    "directory": "/home/laghzal/1337-space/ft_ncdu",
+    "output": "obj/actions/presets.o"
+  },
+  {
+    "file": "src/actions/peek.c",
+    "arguments": [
+      "/usr/bin/gcc",
+      "-Wall",
+      "-Wextra",
+      "-Werror",
+      "-O3",
+      "-march=native",
+      "-Iincludes",
+      "-c",
+      "src/actions/peek.c",
+      "-o",
+      "obj/actions/peek.o"
+    ],
+    "directory": "/home/laghzal/1337-space/ft_ncdu",
+    "output": "obj/actions/peek.o"
+  },
+  {
+    "file": "src/actions/tools.c",
+    "arguments": [
+      "/usr/bin/gcc",
+      "-Wall",
+      "-Wextra",
+      "-Werror",
+      "-O3",
+      "-march=native",
+      "-Iincludes",
+      "-c",
+      "src/actions/tools.c",
+      "-o",
+      "obj/actions/tools.o"
+    ],
+    "directory": "/home/laghzal/1337-space/ft_ncdu",
+    "output": "obj/actions/tools.o"
+  },
+  {
+    "file": "src/actions/report.c",
+    "arguments": [
+      "/usr/bin/gcc",
+      "-Wall",
+      "-Wextra",
+      "-Werror",
+      "-O3",
+      "-march=native",
+      "-Iincludes",
+      "-c",
+      "src/actions/report.c",
+      "-o",
+      "obj/actions/report.o"
+    ],
+    "directory": "/home/laghzal/1337-space/ft_ncdu",
+    "output": "obj/actions/report.o"
+  },
+  {
+    "file": "src/actions/cli.c",
+    "arguments": [
+      "/usr/bin/gcc",
+      "-Wall",
+      "-Wextra",
+      "-Werror",
+      "-O3",
+      "-march=native",
+      "-Iincludes",
+      "-c",
+      "src/actions/cli.c",
+      "-o",
+      "obj/actions/cli.o"
+    ],
+    "directory": "/home/laghzal/1337-space/ft_ncdu",
+    "output": "obj/actions/cli.o"
+  },
+  {
+    "file": "src/ui/colors.c",
+    "arguments": [
+      "/usr/bin/gcc",
+      "-Wall",
+      "-Wextra",
+      "-Werror",
+      "-O3",
+      "-march=native",
+      "-Iincludes",
+      "-c",
+      "src/ui/colors.c",
+      "-o",
+      "obj/ui/colors.o"
+    ],
+    "directory": "/home/laghzal/1337-space/ft_ncdu",
+    "output": "obj/ui/colors.o"
+  },
+  {
+    "file": "src/ui/hud.c",
+    "arguments": [
+      "/usr/bin/gcc",
+      "-Wall",
+      "-Wextra",
+      "-Werror",
+      "-O3",
+      "-march=native",
+      "-Iincludes",
+      "-c",
+      "src/ui/hud.c",
+      "-o",
+      "obj/ui/hud.o"
+    ],
+    "directory": "/home/laghzal/1337-space/ft_ncdu",
+    "output": "obj/ui/hud.o"
+  },
+  {
+    "file": "src/ui/table.c",
+    "arguments": [
+      "/usr/bin/gcc",
+      "-Wall",
+      "-Wextra",
+      "-Werror",
+      "-O3",
+      "-march=native",
+      "-Iincludes",
+      "-c",
+      "src/ui/table.c",
+      "-o",
+      "obj/ui/table.o"
+    ],
+    "directory": "/home/laghzal/1337-space/ft_ncdu",
+    "output": "obj/ui/table.o"
+  },
+  {
+    "file": "src/ui/inspector.c",
+    "arguments": [
+      "/usr/bin/gcc",
+      "-Wall",
+      "-Wextra",
+      "-Werror",
+      "-O3",
+      "-march=native",
+      "-Iincludes",
+      "-c",
+      "src/ui/inspector.c",
+      "-o",
+      "obj/ui/inspector.o"
+    ],
+    "directory": "/home/laghzal/1337-space/ft_ncdu",
+    "output": "obj/ui/inspector.o"
+  },
+  {
+    "file": "src/ui/draw.c",
+    "arguments": [
+      "/usr/bin/gcc",
+      "-Wall",
+      "-Wextra",
+      "-Werror",
+      "-O3",
+      "-march=native",
+      "-Iincludes",
+      "-c",
+      "src/ui/draw.c",
+      "-o",
+      "obj/ui/draw.o"
+    ],
+    "directory": "/home/laghzal/1337-space/ft_ncdu",
+    "output": "obj/ui/draw.o"
+  },
+  {
+    "file": "src/ui/modals.c",
+    "arguments": [
+      "/usr/bin/gcc",
+      "-Wall",
+      "-Wextra",
+      "-Werror",
+      "-O3",
+      "-march=native",
+      "-Iincludes",
+      "-c",
+      "src/ui/modals.c",
+      "-o",
+      "obj/ui/modals.o"
+    ],
+    "directory": "/home/laghzal/1337-space/ft_ncdu",
+    "output": "obj/ui/modals.o"
+  },
+  {
+    "file": "src/utils/presets_data.c",
+    "arguments": [
+      "/usr/bin/gcc",
+      "-Wall",
+      "-Wextra",
+      "-Werror",
+      "-O3",
+      "-march=native",
+      "-Iincludes",
+      "-c",
+      "src/utils/presets_data.c",
+      "-o",
+      "obj/utils/presets_data.o"
+    ],
+    "directory": "/home/laghzal/1337-space/ft_ncdu",
+    "output": "obj/utils/presets_data.o"
+  },
+  {
+    "file": "src/utils/security.c",
+    "arguments": [
+      "/usr/bin/gcc",
+      "-Wall",
+      "-Wextra",
+      "-Werror",
+      "-O3",
+      "-march=native",
+      "-Iincludes",
+      "-c",
+      "src/utils/security.c",
+      "-o",
+      "obj/utils/security.o"
+    ],
+    "directory": "/home/laghzal/1337-space/ft_ncdu",
+    "output": "obj/utils/security.o"
+  },
+  {
+    "file": "src/utils/format.c",
+    "arguments": [
+      "/usr/bin/gcc",
+      "-Wall",
+      "-Wextra",
+      "-Werror",
+      "-O3",
+      "-march=native",
+      "-Iincludes",
+      "-c",
+      "src/utils/format.c",
+      "-o",
+      "obj/utils/format.o"
+    ],
+    "directory": "/home/laghzal/1337-space/ft_ncdu",
+    "output": "obj/utils/format.o"
+  },
+  {
+    "file": "src/utils/memory.c",
+    "arguments": [
+      "/usr/bin/gcc",
+      "-Wall",
+      "-Wextra",
+      "-Werror",
+      "-O3",
+      "-march=native",
+      "-Iincludes",
+      "-c",
+      "src/utils/memory.c",
+      "-o",
+      "obj/utils/memory.o"
+    ],
+    "directory": "/home/laghzal/1337-space/ft_ncdu",
+    "output": "obj/utils/memory.o"
+  },
+  {
+    "file": "src/utils/filter.c",
+    "arguments": [
+      "/usr/bin/gcc",
+      "-Wall",
+      "-Wextra",
+      "-Werror",
+      "-O3",
+      "-march=native",
+      "-Iincludes",
+      "-c",
+      "src/utils/filter.c",
+      "-o",
+      "obj/utils/filter.o"
+    ],
+    "directory": "/home/laghzal/1337-space/ft_ncdu",
+    "output": "obj/utils/filter.o"
+  }
+]

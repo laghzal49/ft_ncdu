@@ -3,133 +3,137 @@
 /*                                                        :::      ::::::::   */
 /*   hud.c                                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: laghzal <laghzal@student.1337.ma>          +#+  +:+       +#+        */
+/*   By: tlaghzal <tlaghzal@student.1337.ma>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/08/22 22:45:00 by laghzal           #+#    #+#             */
-/*   Updated: 2026/08/22 22:45:00 by laghzal          ###   ########.fr       */
+/*   Created: 2026/08/22 22:45:00 by tlaghzal          #+#    #+#             */
+/*   Updated: 2026/08/24 22:00:00 by tlaghzal         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ft_ncdu.h"
 
-void	render_gauge(char *buf, double pct, int width)
+void	render_gauge(char *buffer, double percentage, int width)
 {
-	int	filled;
+	int	filled_blocks;
 	int	i;
 
 	if (width < 2)
 		width = 2;
 	if (width > 16)
 		width = 16;
-	filled = (int)((pct / 100.0) * width);
-	if (filled > width)
-		filled = width;
-	if (filled < 0)
-		filled = 0;
-	buf[0] = '[';
+	filled_blocks = (int)((percentage / 100.0) * width);
+	if (filled_blocks > width)
+		filled_blocks = width;
+	if (filled_blocks < 0)
+		filled_blocks = 0;
+	buffer[0] = '[';
 	i = 0;
-	while (i < filled)
-		buf[1 + i++] = '#';
+	while (i < filled_blocks)
+		buffer[1 + i++] = '#';
 	while (i < width)
-		buf[1 + i++] = '.';
-	buf[1 + width] = ']';
-	buf[2 + width] = ' ';
-	snprintf(buf + 3 + width, 16, "%5.1f%%", pct);
+		buffer[1 + i++] = '.';
+	buffer[1 + width] = ']';
+	buffer[2 + width] = ' ';
+	snprintf(buffer + 3 + width, 16, "%5.1f%%", percentage);
 }
 
-void	render_graph_bar(char *buf, off_t val, off_t max, int w)
+void	render_graph_bar(char *buffer, off_t item_size, off_t max_size,
+		int bar_width)
 {
-	int		filled;
+	int		filled_blocks;
 	int		i;
-	double	pct;
+	double	ratio;
 
-	if (w < 2)
-		w = 2;
-	if (w > 16)
-		w = 16;
-	pct = 0.0;
-	if (max > 0)
-		pct = (double)val / (double)max;
-	filled = (int)(pct * w);
-	if (filled > w)
-		filled = w;
-	buf[0] = '[';
+	if (bar_width < 2)
+		bar_width = 2;
+	if (bar_width > 16)
+		bar_width = 16;
+	ratio = 0.0;
+	if (max_size > 0)
+		ratio = (double)item_size / (double)max_size;
+	filled_blocks = (int)(ratio * bar_width);
+	if (filled_blocks > bar_width)
+		filled_blocks = bar_width;
+	buffer[0] = '[';
 	i = 0;
-	while (i < filled)
-		buf[1 + i++] = '#';
-	while (i < w)
-		buf[1 + i++] = '.';
-	buf[1 + w] = ']';
-	buf[2 + w] = '\0';
+	while (i < filled_blocks)
+		buffer[1 + i++] = '#';
+	while (i < bar_width)
+		buffer[1 + i++] = '.';
+	buffer[1 + bar_width] = ']';
+	buffer[2 + bar_width] = '\0';
 }
 
-static void	render_home_card(t_rect r, double h_pct)
+static void	render_home_card(t_rect rect, double home_percent)
 {
-	char	gauge[64];
-	int		h_col;
-	int		w_param;
+	char	gauge_text[64];
+	int		color_pair;
+	int		gauge_width;
 
-	draw_box(r, "💾 HOME QUOTA", 1);
-	w_param = 6;
-	if (r.w > 32)
-		w_param = 10;
-	render_gauge(gauge, h_pct, w_param);
-	h_col = 2;
-	if (h_pct > 85.0)
-		h_col = 4;
-	else if (h_pct > 70.0)
-		h_col = 3;
-	attron(COLOR_PAIR(h_col) | A_BOLD);
-	mvprintw(r.y + 1, r.x + 2, "%.*s", r.w - 4, gauge);
-	wattroff(stdscr, COLOR_PAIR(h_col) | A_BOLD);
+	draw_box(rect, "💾 HOME QUOTA", 1);
+	gauge_width = 6;
+	if (rect.w > 32)
+		gauge_width = 10;
+	render_gauge(gauge_text, home_percent, gauge_width);
+	color_pair = 2;
+	if (home_percent > 85.0)
+		color_pair = 4;
+	else if (home_percent > 70.0)
+		color_pair = 3;
+	attron(COLOR_PAIR(color_pair) | A_BOLD);
+	mvprintw(rect.y + 1, rect.x + 2, "%.*s", rect.w - 4, gauge_text);
+	wattroff(stdscr, COLOR_PAIR(color_pair) | A_BOLD);
 }
 
-static void	render_goinfre_card(t_rect r, int has_g, double g_pct, off_t g_free)
+static void	render_goinfre_card(t_rect rect, int has_goinfre,
+		double goinfre_percent, off_t free_bytes)
 {
-	char	sz_free[16];
-	char	gauge[64];
+	char	free_size_str[16];
+	char	gauge_text[64];
 
-	draw_box(r, "⚡ GOINFRE NVMe", 6);
-	if (has_g)
+	draw_box(rect, "⚡ GOINFRE NVMe", 6);
+	if (has_goinfre)
 	{
-		format_size(g_free, sz_free, sizeof(sz_free));
-		render_gauge(gauge, g_pct, 6);
+		format_size(free_bytes, free_size_str, sizeof(free_size_str));
+		render_gauge(gauge_text, goinfre_percent, 6);
 		attron(COLOR_PAIR(6) | A_BOLD);
-		mvprintw(r.y + 1, r.x + 2, "%s Free (%s)", sz_free, gauge);
+		mvprintw(rect.y + 1, rect.x + 2, "%s Free (%s)", free_size_str,
+			gauge_text);
 		wattroff(stdscr, COLOR_PAIR(6) | A_BOLD);
 	}
 	else
 	{
 		attron(COLOR_PAIR(7));
-		mvprintw(r.y + 1, r.x + 2, "/tmp Fallback Storage");
+		mvprintw(rect.y + 1, rect.x + 2, "/tmp Fallback Storage");
 		attroff(COLOR_PAIR(7));
 	}
 }
 
 void	render_top_hud(int max_x)
 {
-	struct statvfs	vfs;
-	struct statvfs	vfsg;
-	int				card_w;
-	t_rect			r;
-	double			h_pct;
+	struct statvfs	fs_stats;
+	struct statvfs	goinfre_stats;
+	int				card_width;
+	t_rect			rect;
+	double			home_percent;
 
-	card_w = (max_x - 4) / 3;
-	if (card_w < 20)
-		card_w = 20;
-	statvfs(g_state.current_dir, &vfs);
-	h_pct = 0.0;
-	if (vfs.f_blocks > 0)
-		h_pct = (double)(vfs.f_blocks - vfs.f_bfree) / vfs.f_blocks * 100.0;
-	r = (t_rect){1, 0, 3, card_w + 1};
-	render_home_card(r, h_pct);
-	r = (t_rect){1, card_w + 1, 3, card_w + 1};
-	draw_box(r, "📊 INODES", 2);
+	card_width = (max_x - 4) / 3;
+	if (card_width < 20)
+		card_width = 20;
+	statvfs(g_state.current_dir, &fs_stats);
+	home_percent = 0.0;
+	if (fs_stats.f_blocks > 0)
+		home_percent = (double)(fs_stats.f_blocks - fs_stats.f_bfree)
+			/ fs_stats.f_blocks * 100.0;
+	rect = (t_rect){1, 0, 3, card_width + 1};
+	render_home_card(rect, home_percent);
+	rect = (t_rect){1, card_width + 1, 3, card_width + 1};
+	draw_box(rect, "📊 INODES", 2);
 	attron(COLOR_PAIR(2) | A_BOLD);
-	mvprintw(2, card_w + 3, "%llu Inodes Used",
-		(unsigned long long)(vfs.f_files - vfs.f_ffree));
+	mvprintw(2, card_width + 3, "%llu Inodes Used",
+		(unsigned long long)(fs_stats.f_files - fs_stats.f_ffree));
 	wattroff(stdscr, COLOR_PAIR(2) | A_BOLD);
-	r = (t_rect){1, (card_w + 1) * 2, 3, max_x - (card_w + 1) * 2};
-	render_goinfre_card(r, statvfs("/goinfre", &vfsg) == 0, 0.0,
-		(off_t)vfsg.f_bfree * vfsg.f_frsize);
+	rect = (t_rect){1, (card_width + 1) * 2, 3, max_x - (card_width + 1) * 2};
+	render_goinfre_card(rect, statvfs("/goinfre", &goinfre_stats) == 0, 0.0,
+		(off_t)goinfre_stats.f_bfree * goinfre_stats.f_frsize);
 }

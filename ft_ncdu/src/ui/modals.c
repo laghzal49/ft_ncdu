@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   modals.c                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: laghzal <laghzal@student.1337.ma>          +#+  +:+       +#+        */
+/*   By: tlaghzal <tlaghzal@student.1337.ma>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/08/22 22:45:00 by laghzal           #+#    #+#             */
-/*   Updated: 2026/08/22 22:45:00 by laghzal          ###   ########.fr       */
+/*   Created: 2026/08/22 22:45:00 by tlaghzal          #+#    #+#             */
+/*   Updated: 2026/08/24 22:00:00 by tlaghzal         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,7 @@
 int	confirm_modal(const char *title, const char *message)
 {
 	WINDOW	*win;
-	int		ch;
+	int		key_code;
 
 	win = newwin(8, 68, (LINES - 8) / 2, (COLS - 68) / 2);
 	if (!win)
@@ -30,9 +30,9 @@ int	confirm_modal(const char *title, const char *message)
 	wattroff(win, COLOR_PAIR(2) | A_BOLD);
 	wrefresh(win);
 	wtimeout(win, -1);
-	ch = wgetch(win);
+	key_code = wgetch(win);
 	delwin(win);
-	return (ch == 'y' || ch == 'Y');
+	return (key_code == 'y' || key_code == 'Y');
 }
 
 static void	render_page1_nav(WINDOW *win)
@@ -64,13 +64,13 @@ static void	render_page2_cluster(WINDOW *win)
 	mvwprintw(win, 10, 4, "E                : Export Markdown Quota Report");
 }
 
-static void	render_page_content(WINDOW *win, int p)
+static void	render_page_content(WINDOW *win, int page_idx)
 {
 	werase(win);
 	box(win, 0, 0);
-	if (p == 0)
+	if (page_idx == 0)
 		render_page1_nav(win);
-	else if (p == 1)
+	else if (page_idx == 1)
 		render_page2_cluster(win);
 	else
 	{
@@ -94,23 +94,24 @@ static void	render_page_content(WINDOW *win, int p)
 void	show_help_modal(void)
 {
 	WINDOW	*win;
-	int		p;
-	int		ch;
+	int		page_idx;
+	int		key_code;
 
 	win = newwin(16, 70, (LINES - 16) / 2, (COLS - 70) / 2);
 	if (!win)
 		return ;
-	p = 0;
+	page_idx = 0;
 	while (1)
 	{
-		render_page_content(win, p);
-		ch = wgetch(win);
-		if (ch == 'q' || ch == 27)
+		render_page_content(win, page_idx);
+		key_code = wgetch(win);
+		if (key_code == 'q' || key_code == 27)
 			break ;
-		if (ch == '\t' || ch == KEY_RIGHT || ch == ' ' || ch == 'l')
-			p = (p + 1) % 3;
-		else if (ch == KEY_LEFT || ch == 'h')
-			p = (p + 2) % 3;
+		if (key_code == '\t' || key_code == KEY_RIGHT || key_code == ' '
+			|| key_code == 'l')
+			page_idx = (page_idx + 1) % 3;
+		else if (key_code == KEY_LEFT || key_code == 'h')
+			page_idx = (page_idx + 2) % 3;
 	}
 	delwin(win);
 }

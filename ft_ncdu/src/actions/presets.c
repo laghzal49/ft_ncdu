@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   presets.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: laghzal <laghzal@student.1337.ma>          +#+  +:+       +#+        */
+/*   By: tlaghzal <tlaghzal@student.1337.ma>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/08/22 22:45:00 by laghzal           #+#    #+#             */
-/*   Updated: 2026/08/22 22:45:00 by laghzal          ###   ########.fr       */
+/*   Created: 2026/08/22 22:45:00 by tlaghzal          #+#    #+#             */
+/*   Updated: 2026/08/24 22:00:00 by tlaghzal         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,16 +14,16 @@
 
 static void	render_preset_list(WINDOW *win)
 {
-	size_t	i;
+	size_t	idx;
 
-	i = 0;
-	while (i < PRESET_COUNT)
+	idx = 0;
+	while (idx < PRESET_COUNT)
 	{
-		mvwprintw(win, 3 + (int)i, 2, "[%c] %-22s : %.44s",
-			g_clean_presets[i].key,
-			g_clean_presets[i].title,
-			g_clean_presets[i].desc);
-		i++;
+		mvwprintw(win, 3 + (int)idx, 2, "[%c] %-22s : %.44s",
+			g_clean_presets[idx].key,
+			g_clean_presets[idx].title,
+			g_clean_presets[idx].desc);
+		idx++;
 	}
 	wattron(win, COLOR_PAIR(3) | A_BOLD);
 	mvwprintw(win, (int)PRESET_COUNT + 5, 2,
@@ -31,30 +31,31 @@ static void	render_preset_list(WINDOW *win)
 	wattroff(win, COLOR_PAIR(3) | A_BOLD);
 }
 
-static void	exec_selected_preset(int ch)
+static void	exec_selected_preset(int key_pressed)
 {
-	size_t	i;
-	char	*cmd;
+	size_t	idx;
+	char	*command_str;
 
-	i = 0;
-	while (i < PRESET_COUNT)
+	idx = 0;
+	while (idx < PRESET_COUNT)
 	{
-		if (ch == g_clean_presets[i].key && asprintf(&cmd,
-				g_clean_presets[i].command_fmt, g_state.current_dir) != -1)
+		if (key_pressed == g_clean_presets[idx].key
+			&& asprintf(&command_str, g_clean_presets[idx].command_fmt,
+				g_state.current_dir) != -1)
 		{
-			if (system(cmd))
+			if (system(command_str))
 				(void)0;
-			free(cmd);
+			free(command_str);
 			break ;
 		}
-		i++;
+		idx++;
 	}
 }
 
 void	action_cleaning_presets(void)
 {
 	WINDOW	*win;
-	int		ch;
+	int		key_pressed;
 
 	win = newwin((int)PRESET_COUNT + 8, 76,
 			(LINES - (int)PRESET_COUNT - 8) / 2, (COLS - 76) / 2);
@@ -65,34 +66,35 @@ void	action_cleaning_presets(void)
 	render_preset_list(win);
 	wrefresh(win);
 	wtimeout(win, -1);
-	ch = wgetch(win);
+	key_pressed = wgetch(win);
 	delwin(win);
-	exec_selected_preset(ch);
+	exec_selected_preset(key_pressed);
 	start_async_scan(g_state.current_dir);
 }
 
 void	action_nuke_junk(void)
 {
-	char	*esc;
-	char	*cmd;
+	char	*esc_dir;
+	char	*command_str;
 
 	if (!confirm_modal("NUKE JUNK", "Wipe Python caches & build artifacts?"))
 		return ;
-	esc = shell_escape(g_state.current_dir);
-	if (esc)
+	esc_dir = shell_escape(g_state.current_dir);
+	if (esc_dir)
 	{
-		cmd = NULL;
-		if (asprintf(&cmd, "find %s -type d \\( -name \"node_modules\" -o "
-				"-name \".cache\" -o -name \"*.dSYM\" -o -name \"__pycache__\" "
-				"\\) -prune -exec rm -rf {} + 2>/dev/null; "
+		command_str = NULL;
+		if (asprintf(&command_str, "find %s -type d \\( -name \"node_modules\" "
+				"-o -name \".cache\" -o -name \"*.dSYM\" -o -name "
+				"\"__pycache__\" \\) -prune -exec rm -rf {} + 2>/dev/null; "
 				"find %s -type f \\( -name \"*.o\" -o -name \"*.a\" -o "
-				"-name \"core.*\" \\) -delete 2>/dev/null", esc, esc) != -1)
+				"-name \"core.*\" \\) -delete 2>/dev/null",
+				esc_dir, esc_dir) != -1)
 		{
-			if (system(cmd))
+			if (system(command_str))
 				(void)0;
-			free(cmd);
+			free(command_str);
 		}
-		free(esc);
+		free(esc_dir);
 	}
 	start_async_scan(g_state.current_dir);
 }

@@ -3,43 +3,43 @@
 /*                                                        :::      ::::::::   */
 /*   delete.c                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: laghzal <laghzal@student.1337.ma>          +#+  +:+       +#+        */
+/*   By: tlaghzal <tlaghzal@student.1337.ma>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/08/22 22:45:00 by laghzal           #+#    #+#             */
-/*   Updated: 2026/08/22 22:45:00 by laghzal          ###   ########.fr       */
+/*   Created: 2026/08/22 22:45:00 by tlaghzal          #+#    #+#             */
+/*   Updated: 2026/08/24 22:00:00 by tlaghzal         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ft_ncdu.h"
 
-static void	exec_rm_rf(const char *path)
+static void	exec_rm_rf(const char *target_path)
 {
-	char	*esc;
-	char	*cmd;
+	char	*escaped_path;
+	char	*command_str;
 
-	esc = shell_escape(path);
-	if (!esc)
+	escaped_path = shell_escape(target_path);
+	if (!escaped_path)
 		return ;
-	cmd = NULL;
-	if (asprintf(&cmd, "rm -rf %s", esc) != -1)
+	command_str = NULL;
+	if (asprintf(&command_str, "rm -rf %s", escaped_path) != -1)
 	{
-		if (system(cmd))
+		if (system(command_str))
 			(void)0;
-		free(cmd);
+		free(command_str);
 	}
-	free(esc);
+	free(escaped_path);
 }
 
 void	action_batch_unmark(void)
 {
-	int	i;
+	int	idx;
 
 	pthread_mutex_lock(&g_state.lock);
-	i = 0;
-	while (i < g_state.count)
+	idx = 0;
+	while (idx < g_state.count)
 	{
-		g_state.entries[i].marked = 0;
-		i++;
+		g_state.entries[idx].marked = 0;
+		idx++;
 	}
 	pthread_mutex_unlock(&g_state.lock);
 	apply_filter();
@@ -47,37 +47,39 @@ void	action_batch_unmark(void)
 
 static void	delete_single_target(t_file_entry *target)
 {
-	char	msg[128];
+	char	modal_message[128];
 
 	if (is_protected_target(target->path))
 	{
 		confirm_modal("BLOCKED", "Cannot delete protected system config file!");
 		return ;
 	}
-	snprintf(msg, sizeof(msg), "Permanently delete: %.38s?", target->name);
-	if (confirm_modal("DELETE TARGET", msg))
+	snprintf(modal_message, sizeof(modal_message),
+		"Permanently delete: %.38s?", target->name);
+	if (confirm_modal("DELETE TARGET", modal_message))
 	{
 		exec_rm_rf(target->path);
 		start_async_scan(g_state.current_dir);
 	}
 }
 
-static void	delete_batch_marked(int marked)
+static void	delete_batch_marked(int marked_count)
 {
-	char	msg[128];
-	int		i;
+	char	modal_message[128];
+	int		idx;
 
-	snprintf(msg, sizeof(msg), "Permanently delete %d marked items?", marked);
-	if (!confirm_modal("BATCH DELETE", msg))
+	snprintf(modal_message, sizeof(modal_message),
+		"Permanently delete %d marked items?", marked_count);
+	if (!confirm_modal("BATCH DELETE", modal_message))
 		return ;
 	pthread_mutex_lock(&g_state.lock);
-	i = 0;
-	while (i < g_state.count)
+	idx = 0;
+	while (idx < g_state.count)
 	{
-		if (g_state.entries[i].marked
-			&& !is_protected_target(g_state.entries[i].path))
-			exec_rm_rf(g_state.entries[i].path);
-		i++;
+		if (g_state.entries[idx].marked
+			&& !is_protected_target(g_state.entries[idx].path))
+			exec_rm_rf(g_state.entries[idx].path);
+		idx++;
 	}
 	pthread_mutex_unlock(&g_state.lock);
 	start_async_scan(g_state.current_dir);
@@ -85,13 +87,13 @@ static void	delete_batch_marked(int marked)
 
 void	action_delete(void)
 {
-	int	marked;
+	int	marked_count;
 
 	if (g_state.filtered_count == 0)
 		return ;
-	marked = count_marked_items();
-	if (marked > 0)
-		delete_batch_marked(marked);
+	marked_count = count_marked_items();
+	if (marked_count > 0)
+		delete_batch_marked(marked_count);
 	else
 		delete_single_target(&g_state.filtered[g_state.selected]);
 }

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   tools.c                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: laghzal <laghzal@student.1337.ma>          +#+  +:+       +#+        */
+/*   By: tlaghzal <tlaghzal@student.1337.ma>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/08/22 22:45:00 by laghzal           #+#    #+#             */
-/*   Updated: 2026/08/22 22:45:00 by laghzal          ###   ########.fr       */
+/*   Created: 2026/08/22 22:45:00 by tlaghzal          #+#    #+#             */
+/*   Updated: 2026/08/24 22:00:00 by tlaghzal         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,8 +15,8 @@
 void	action_goto_path(void)
 {
 	WINDOW	*win;
-	char	buf[PATH_MAX_LEN];
-	char	real_p[PATH_MAX_LEN];
+	char	input_buffer[PATH_MAX_LEN];
+	char	resolved_path[PATH_MAX_LEN];
 
 	win = newwin(7, 70, (LINES - 7) / 2, (COLS - 70) / 2);
 	box(win, 0, 0);
@@ -27,41 +27,42 @@ void	action_goto_path(void)
 	echo();
 	curs_set(1);
 	wtimeout(win, -1);
-	buf[0] = '\0';
-	wgetnstr(win, buf, sizeof(buf) - 1);
+	input_buffer[0] = '\0';
+	wgetnstr(win, input_buffer, sizeof(input_buffer) - 1);
 	noecho();
 	curs_set(0);
 	delwin(win);
-	if (strlen(buf) > 0 && realpath(buf, real_p))
-		start_async_scan(real_p);
+	if (strlen(input_buffer) > 0 && realpath(input_buffer, resolved_path))
+		start_async_scan(resolved_path);
 }
 
-static void	exec_custom_cmd(const char *buf, const char *path)
+static void	exec_custom_cmd(const char *cmd_text, const char *target_path)
 {
-	char	*esc;
-	char	*cmd;
+	char	*escaped_path;
+	char	*full_command;
 
-	esc = shell_escape(path);
-	if (esc && asprintf(&cmd, "%s %s", buf, esc) != -1)
+	escaped_path = shell_escape(target_path);
+	if (escaped_path && asprintf(&full_command, "%s %s", cmd_text,
+			escaped_path) != -1)
 	{
 		def_prog_mode();
 		endwin();
-		printf("\n\033[1;36m[ft_ncdu]\033[0m Executing: %s\n", cmd);
-		if (system(cmd))
+		printf("\n\033[1;36m[ft_ncdu]\033[0m Executing: %s\n", full_command);
+		if (system(full_command))
 			(void)0;
-		free(cmd);
+		free(full_command);
 		printf("\nPress Enter to return...");
 		getchar();
 		reset_prog_mode();
 		refresh();
 	}
-	free(esc);
+	free(escaped_path);
 }
 
 void	action_custom_command(void)
 {
 	WINDOW	*win;
-	char	buf[512];
+	char	command_buffer[512];
 
 	if (g_state.filtered_count == 0)
 		return ;
@@ -76,54 +77,56 @@ void	action_custom_command(void)
 	echo();
 	curs_set(1);
 	wtimeout(win, -1);
-	buf[0] = '\0';
-	wgetnstr(win, buf, sizeof(buf) - 1);
+	command_buffer[0] = '\0';
+	wgetnstr(win, command_buffer, sizeof(command_buffer) - 1);
 	noecho();
 	curs_set(0);
 	delwin(win);
-	if (strlen(buf) > 0)
-		exec_custom_cmd(buf, g_state.filtered[g_state.selected].path);
+	if (strlen(command_buffer) > 0)
+		exec_custom_cmd(command_buffer,
+			g_state.filtered[g_state.selected].path);
 	start_async_scan(g_state.current_dir);
 }
 
 void	action_edit(void)
 {
-	const char	*editor;
-	char		*esc;
-	char		*cmd;
+	const char	*editor_name;
+	char		*escaped_path;
+	char		*command_str;
 
 	if (g_state.filtered_count == 0)
 		return ;
-	editor = getenv("EDITOR");
-	if (!editor)
-		editor = "nvim";
-	esc = shell_escape(g_state.filtered[g_state.selected].path);
-	if (esc && asprintf(&cmd, "%s %s", editor, esc) != -1)
+	editor_name = getenv("EDITOR");
+	if (!editor_name)
+		editor_name = "nvim";
+	escaped_path = shell_escape(g_state.filtered[g_state.selected].path);
+	if (escaped_path && asprintf(&command_str, "%s %s", editor_name,
+			escaped_path) != -1)
 	{
 		def_prog_mode();
 		endwin();
-		if (system(cmd))
+		if (system(command_str))
 			(void)0;
-		free(cmd);
+		free(command_str);
 		reset_prog_mode();
 		refresh();
 	}
-	free(esc);
+	free(escaped_path);
 	start_async_scan(g_state.current_dir);
 }
 
 void	action_shell(void)
 {
-	const char	*sh;
+	const char	*shell_name;
 
-	sh = getenv("SHELL");
-	if (!sh)
-		sh = "/bin/zsh";
+	shell_name = getenv("SHELL");
+	if (!shell_name)
+		shell_name = "/bin/zsh";
 	def_prog_mode();
 	endwin();
 	printf("\n\033[1;36m[ft_ncdu]\033[0m Subshell at %s\n",
 		g_state.current_dir);
-	if (chdir(g_state.current_dir) == 0 && system(sh))
+	if (chdir(g_state.current_dir) == 0 && system(shell_name))
 		(void)0;
 	reset_prog_mode();
 	refresh();

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   format.c                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: laghzal <laghzal@student.1337.ma>          +#+  +:+       +#+        */
+/*   By: tlaghzal <tlaghzal@student.1337.ma>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/08/22 22:45:00 by laghzal           #+#    #+#             */
-/*   Updated: 2026/08/22 22:45:00 by laghzal          ###   ########.fr       */
+/*   Created: 2026/08/22 22:45:00 by tlaghzal          #+#    #+#             */
+/*   Updated: 2026/08/24 22:00:00 by tlaghzal         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,20 +15,20 @@
 void	format_size(off_t bytes, char *out, size_t out_len)
 {
 	const char	*units[] = {"B", "KB", "MB", "GB", "TB", "PB"};
-	int			unit_idx;
-	double		sz;
+	int			unit_index;
+	double		size_value;
 
-	unit_idx = 0;
-	sz = (double)bytes;
-	while (sz >= 1024.0 && unit_idx < 5)
+	unit_index = 0;
+	size_value = (double)bytes;
+	while (size_value >= 1024.0 && unit_index < 5)
 	{
-		sz /= 1024.0;
-		unit_idx++;
+		size_value /= 1024.0;
+		unit_index++;
 	}
-	if (unit_idx == 0)
+	if (unit_index == 0)
 		snprintf(out, out_len, "%4lld   B", (long long)bytes);
 	else
-		snprintf(out, out_len, "%6.1f %s", sz, units[unit_idx]);
+		snprintf(out, out_len, "%6.1f %s", size_value, units[unit_index]);
 }
 
 static void	fill_rwx(mode_t mode, char *out)
@@ -61,17 +61,17 @@ void	format_permissions(mode_t mode, char *out)
 
 void	format_breadcrumbs(const char *path, char *out, size_t max_len)
 {
-	size_t	len;
+	size_t	total_len;
 
 	if (!path || !out || max_len == 0)
 		return ;
-	len = strlen(path);
-	if (len <= max_len)
+	total_len = strlen(path);
+	if (total_len <= max_len)
 		safe_str_copy(out, path, max_len + 1);
 	else
 	{
 		safe_str_copy(out, "...", max_len + 1);
 		if (max_len > 3)
-			strncat(out, path + (len - (max_len - 3)), max_len - 3);
+			strncat(out, path + (total_len - (max_len - 3)), max_len - 3);
 	}
 }

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   worker.c                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: laghzal <laghzal@student.1337.ma>          +#+  +:+       +#+        */
+/*   By: tlaghzal <tlaghzal@student.1337.ma>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/08/22 22:45:00 by laghzal           #+#    #+#             */
-/*   Updated: 2026/08/22 22:45:00 by laghzal          ###   ########.fr       */
+/*   Created: 2026/08/22 22:45:00 by tlaghzal          #+#    #+#             */
+/*   Updated: 2026/08/24 22:00:00 by tlaghzal         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,17 +14,18 @@
 
 void	check_symlink_health(t_file_entry *entry)
 {
-	ssize_t		len;
-	struct stat	st;
+	ssize_t		target_len;
+	struct stat	stat_info;
 
 	if (entry->type != TYPE_LINK)
 		return ;
-	len = readlink(entry->path, entry->symlink_target, PATH_MAX_LEN - 1);
-	if (len != -1)
-		entry->symlink_target[len] = '\0';
+	target_len = readlink(entry->path, entry->symlink_target,
+			PATH_MAX_LEN - 1);
+	if (target_len != -1)
+		entry->symlink_target[target_len] = '\0';
 	else
 		entry->symlink_target[0] = '\0';
-	if (stat(entry->path, &st) == -1)
+	if (stat(entry->path, &stat_info) == -1)
 	{
 		entry->is_broken_link = 1;
 		pthread_mutex_lock(&g_state.lock);
@@ -38,88 +39,90 @@ void	check_symlink_health(t_file_entry *entry)
 		entry->is_goinfre_link = 1;
 }
 
-static void	calc_subitem(const char *path, const char *name,
-		off_t *out_s, off_t *out_d)
+static void	calc_subitem(const char *parent_path, const char *file_name,
+		off_t *apparent_size, off_t *disk_blocks)
 {
-	char		subpath[PATH_MAX_LEN];
-	struct stat	st;
+	char		full_subpath[PATH_MAX_LEN];
+	struct stat	stat_info;
 
-	snprintf(subpath, sizeof(subpath), "%.2048s/%.256s", path, name);
-	if (lstat(subpath, &st) != 0)
+	snprintf(full_subpath, sizeof(full_subpath), "%.2048s/%.256s",
+		parent_path, file_name);
+	if (lstat(full_subpath, &stat_info) != 0)
 		return ;
-	if (g_state.root_dev != 0 && st.st_dev != g_state.root_dev)
+	if (g_state.root_dev != 0 && stat_info.st_dev != g_state.root_dev)
 		return ;
-	if (S_ISDIR(st.st_mode))
-		calculate_dir_recursive(subpath, out_s, out_d);
+	if (S_ISDIR(stat_info.st_mode))
+		calculate_dir_recursive(full_subpath, apparent_size, disk_blocks);
 	else
 	{
-		*out_s += st.st_size;
-		*out_d += st.st_blocks * 512;
+		*apparent_size += stat_info.st_size;
+		*disk_blocks += stat_info.st_blocks * 512;
 	}
 }
 
 void	calculate_dir_recursive(const char *path, off_t *out_s, off_t *out_d)
 {
-	DIR				*dir;
-	struct dirent	*entry;
+	DIR				*dir_handle;
+	struct dirent	*item;
 
 	if (g_state.abort_scan)
 		return ;
-	dir = opendir(path);
-	if (!dir)
+	dir_handle = opendir(path);
+	if (!dir_handle)
 	{
 		pthread_mutex_lock(&g_state.lock);
 		g_state.unreadable_count++;
 		pthread_mutex_unlock(&g_state.lock);
 		return ;
 	}
-	entry = readdir(dir);
-	while (entry && !g_state.abort_scan)
+	item = readdir(dir_handle);
+	while (item && !g_state.abort_scan)
 	{
-		if (strcmp(entry->d_name, ".") != 0 && strcmp(entry->d_name, "..") != 0)
-			calc_subitem(path, entry->d_name, out_s, out_d);
-		entry = readdir(dir);
+		if (strcmp(item->d_name, ".") != 0 && strcmp(item->d_name, "..") != 0)
+			calc_subitem(path, item->d_name, out_s, out_d);
+		item = readdir(dir_handle);
 	}
-	closedir(dir);
+	closedir(dir_handle);
 }
 
-static void	process_worker_entry(int idx)
+static void	process_worker_entry(int entry_idx)
 {
-	off_t	s;
-	off_t	d;
+	off_t	apparent_bytes;
+	off_t	allocated_blocks;
 
-	s = 0;
-	d = 0;
-	calculate_dir_recursive(g_state.entries[idx].path, &s, &d);
+	apparent_bytes = 0;
+	allocated_blocks = 0;
+	calculate_dir_recursive(g_state.entries[entry_idx].path,
+		&apparent_bytes, &allocated_blocks);
 	pthread_mutex_lock(&g_state.lock);
-	g_state.entries[idx].size = s;
-	g_state.entries[idx].disk_size = d;
-	g_state.total_dir_size += s;
-	g_state.total_disk_usage += d;
-	if (d > g_state.max_item_size)
-		g_state.max_item_size = d;
+	g_state.entries[entry_idx].size = apparent_bytes;
+	g_state.entries[entry_idx].disk_size = allocated_blocks;
+	g_state.total_dir_size += apparent_bytes;
+	g_state.total_disk_usage += allocated_blocks;
+	if (allocated_blocks > g_state.max_item_size)
+		g_state.max_item_size = allocated_blocks;
 	pthread_mutex_unlock(&g_state.lock);
 }
 
 void	*scan_thread_worker(void *arg)
 {
 	int	thread_id;
-	int	idx;
+	int	entry_idx;
 
 	thread_id = (int)(intptr_t)arg;
-	idx = thread_id;
+	entry_idx = thread_id;
 	while (!g_state.abort_scan)
 	{
 		pthread_mutex_lock(&g_state.lock);
-		if (idx >= g_state.count)
+		if (entry_idx >= g_state.count)
 		{
 			pthread_mutex_unlock(&g_state.lock);
 			break ;
 		}
 		pthread_mutex_unlock(&g_state.lock);
-		if (g_state.entries[idx].type == TYPE_DIR)
-			process_worker_entry(idx);
-		idx += SCAN_THREADS;
+		if (g_state.entries[entry_idx].type == TYPE_DIR)
+			process_worker_entry(entry_idx);
+		entry_idx += SCAN_THREADS;
 	}
 	return (NULL);
 }

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   draw.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: laghzal <laghzal@student.1337.ma>          +#+  +:+       +#+        */
+/*   By: tlaghzal <tlaghzal@student.1337.ma>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/08/22 22:45:00 by laghzal           #+#    #+#             */
-/*   Updated: 2026/08/22 22:45:00 by laghzal          ###   ########.fr       */
+/*   Created: 2026/08/22 22:45:00 by tlaghzal          #+#    #+#             */
+/*   Updated: 2026/08/24 22:00:00 by tlaghzal         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,8 +14,8 @@
 
 static void	render_header_bar(int max_x)
 {
-	char	breadcrumbs[PATH_MAX_LEN];
-	int		b_len;
+	char	breadcrumb_str[PATH_MAX_LEN];
+	int		breadcrumb_len;
 
 	attron(COLOR_PAIR(4) | A_BOLD);
 	mvprintw(0, 1, "● ");
@@ -30,19 +30,19 @@ static void	render_header_bar(int max_x)
 	attron(COLOR_PAIR(5) | A_BOLD);
 	printw(" %s v%s ", APP_NAME, APP_VERSION);
 	wattroff(stdscr, COLOR_PAIR(5) | A_BOLD);
-	b_len = max_x - 48;
-	if (b_len < 6)
-		b_len = 6;
-	format_breadcrumbs(g_state.current_dir, breadcrumbs, b_len);
+	breadcrumb_len = max_x - 48;
+	if (breadcrumb_len < 6)
+		breadcrumb_len = 6;
+	format_breadcrumbs(g_state.current_dir, breadcrumb_str, breadcrumb_len);
 	attron(COLOR_PAIR(1) | A_BOLD);
-	printw(" 📁 %s ", breadcrumbs);
+	printw(" 📁 %s ", breadcrumb_str);
 	wattroff(stdscr, COLOR_PAIR(1) | A_BOLD);
 }
 
-static void	render_search_footer(int foot_y)
+static void	render_search_footer(int footer_y)
 {
 	attron(COLOR_PAIR(10) | A_BOLD);
-	mvprintw(foot_y, 0, " 🔍 SPOTLIGHT ");
+	mvprintw(footer_y, 0, " 🔍 SPOTLIGHT ");
 	attroff(COLOR_PAIR(10) | A_BOLD);
 	attron(COLOR_PAIR(3) | A_BOLD);
 	printw(" %s_ (ESC clear, Enter apply)", g_state.search_query);
@@ -62,27 +62,27 @@ static const char	*get_sort_tag(void)
 
 void	render_status_footer(int max_y, int max_x)
 {
-	char	sz[16];
-	int		foot_y;
+	char	size_str[16];
+	int		footer_y;
 
-	foot_y = max_y - 1;
+	footer_y = max_y - 1;
 	if (g_state.is_searching)
 	{
-		render_search_footer(foot_y);
+		render_search_footer(footer_y);
 		return ;
 	}
 	attron(COLOR_PAIR(5) | A_BOLD);
-	mvprintw(foot_y, 0, "  FINDER ");
+	mvprintw(footer_y, 0, "  FINDER ");
 	attroff(COLOR_PAIR(5) | A_BOLD);
-	format_size(g_state.total_disk_usage, sz, sizeof(sz));
+	format_size(g_state.total_disk_usage, size_str, sizeof(size_str));
 	attron(COLOR_PAIR(7));
 	printw(" %d items, %s used │ Marked: %d │ %s ",
-		g_state.filtered_count, sz, count_marked_items(), get_sort_tag());
+		g_state.filtered_count, size_str, count_marked_items(), get_sort_tag());
 	attroff(COLOR_PAIR(7));
 	if (max_x > 36)
 	{
 		attron(COLOR_PAIR(11));
-		mvprintw(foot_y, max_x - 22, " [F / ?] Features │ ⌘Q ");
+		mvprintw(footer_y, max_x - 22, " [F / ?] Features │ ⌘Q ");
 		attroff(COLOR_PAIR(11));
 	}
 }
@@ -92,8 +92,8 @@ void	draw_ui(void)
 	int		max_y;
 	int		max_x;
 	int		split_x;
-	int		body_h;
-	t_rect	r;
+	int		body_height;
+	t_rect	rect;
 
 	erase();
 	getmaxyx(stdscr, max_y, max_x);
@@ -106,11 +106,11 @@ void	draw_ui(void)
 	render_header_bar(max_x);
 	render_top_hud(max_x);
 	split_x = (max_x * 58) / 100;
-	body_h = max_y - 6;
-	r = (t_rect){4, 0, body_h, split_x};
-	render_file_table(r, split_x);
-	r = (t_rect){4, split_x, body_h, max_x - split_x};
-	render_inspector(r, split_x);
+	body_height = max_y - 6;
+	rect = (t_rect){4, 0, body_height, split_x};
+	render_file_table(rect, split_x);
+	rect = (t_rect){4, split_x, body_height, max_x - split_x};
+	render_inspector(rect, split_x);
 	render_status_footer(max_y, max_x);
 	refresh();
 }

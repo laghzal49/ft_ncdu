@@ -3,66 +3,63 @@
 /*                                                        :::      ::::::::   */
 /*   report.c                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: laghzal <laghzal@student.1337.ma>          +#+  +:+       +#+        */
+/*   By: tlaghzal <tlaghzal@student.1337.ma>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/08/22 22:45:00 by laghzal           #+#    #+#             */
-/*   Updated: 2026/08/22 22:45:00 by laghzal          ###   ########.fr       */
+/*   Created: 2026/08/22 22:45:00 by tlaghzal          #+#    #+#             */
+/*   Updated: 2026/08/24 22:00:00 by tlaghzal         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ft_ncdu.h"
 
-static void	write_top_consumers(FILE *fp)
+static void	write_top_consumers(FILE *file_handle)
 {
-	char		sz[16];
-	off_t		item_sz;
-	const char	*t_str;
-	int			i;
+	char		size_str[16];
+	off_t		item_size;
+	const char	*type_label;
+	int			idx;
 
 	pthread_mutex_lock(&g_state.lock);
-	i = 0;
-	while (i < g_state.count && i < 30)
+	idx = 0;
+	while (idx < g_state.count && idx < 30)
 	{
 		if (g_state.size_mode == SIZE_ACTUAL_DISK)
-			item_sz = g_state.entries[i].disk_size;
+			item_size = g_state.entries[idx].disk_size;
 		else
-			item_sz = g_state.entries[i].size;
-		format_size(item_sz, sz, sizeof(sz));
-		t_str = "FILE";
-		if (g_state.entries[i].type == TYPE_DIR)
-			t_str = "DIR ";
-		fprintf(fp, "| %02d | %s | %s | `%s` |\n",
-			i + 1, t_str, sz, g_state.entries[i].name);
-		i++;
+			item_size = g_state.entries[idx].size;
+		format_size(item_size, size_str, sizeof(size_str));
+		type_label = "FILE";
+		if (g_state.entries[idx].type == TYPE_DIR)
+			type_label = "DIR ";
+		fprintf(file_handle, "| %02d | %s | %s | `%s` |\n",
+			idx + 1, type_label, size_str, g_state.entries[idx].name);
+		idx++;
 	}
 	pthread_mutex_unlock(&g_state.lock);
 }
 
 void	action_export_report(void)
 {
-	FILE			*fp;
-	struct statvfs	vfs;
-	char			sz_tot[16];
-	char			sz_used[16];
+	FILE			*file_handle;
+	struct statvfs	fs_stats;
+	char			tot_sz[16];
+	char			used_sz[16];
 
-	fp = fopen("quota_report.md", "w");
-	if (!fp)
-	{
-		confirm_modal("ERROR", "Could not create quota_report.md!");
+	file_handle = fopen("quota_report.md", "w");
+	if (!file_handle)
 		return ;
-	}
-	statvfs(g_state.current_dir, &vfs);
-	format_size((off_t)vfs.f_blocks * vfs.f_frsize, sz_tot, sizeof(sz_tot));
-	format_size((off_t)(vfs.f_blocks - vfs.f_bfree) * vfs.f_frsize,
-		sz_used, sizeof(sz_used));
-	fprintf(fp, "# 1337 / 42 Cluster Storage Audit Report\n\n");
-	fprintf(fp, "**Target:** `%s` | **User:** `%s`\n",
-		g_state.current_dir, g_state.username);
-	fprintf(fp, "**Quota:** %s used / %s total\n\n", sz_used, sz_tot);
-	fprintf(fp, "## Top 30 Consumers\n\n| # | Type | Size | Name |\n");
-	fprintf(fp, "| :--- | :--- | :--- | :--- |\n");
-	write_top_consumers(fp);
-	fclose(fp);
+	statvfs(g_state.current_dir, &fs_stats);
+	format_size((off_t)fs_stats.f_blocks * fs_stats.f_frsize,
+		tot_sz, sizeof(tot_sz));
+	format_size((off_t)(fs_stats.f_blocks - fs_stats.f_bfree)
+		* fs_stats.f_frsize, used_sz, sizeof(used_sz));
+	fprintf(file_handle, "# 1337 / 42 Cluster Storage Audit Report\n\n"
+		"**Target:** `%s` | **User:** `%s`\n**Quota:** %s / %s\n\n"
+		"## Top 30 Consumers\n\n| # | Type | Size | Name |\n"
+		"| :--- | :--- | :--- | :--- |\n",
+		g_state.current_dir, g_state.username, used_sz, tot_sz);
+	write_top_consumers(file_handle);
+	fclose(file_handle);
 	confirm_modal("SUCCESS", "Exported report to quota_report.md!");
 }
 
