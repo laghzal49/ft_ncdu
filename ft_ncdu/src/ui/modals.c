@@ -35,63 +35,82 @@ int	confirm_modal(const char *title, const char *message)
 	return (ch == 'y' || ch == 'Y');
 }
 
-static void	render_help_part1(WINDOW *win)
+static void	render_page1_nav(WINDOW *win)
 {
 	wattron(win, COLOR_PAIR(3) | A_BOLD);
-	mvwprintw(win, 2, 2, " 🧭 FINDER NAVIGATION");
+	mvwprintw(win, 2, 2, " 🧭 FINDER NAVIGATION & SEARCH (TAB 1/3)");
 	wattroff(win, COLOR_PAIR(3) | A_BOLD);
-	mvwprintw(win, 3, 4, "j / k / Arrows   : Navigate Rows");
-	mvwprintw(win, 4, 4, "g / G / PgUp/PgDn: Top / Bottom / Page");
-	mvwprintw(win, 5, 4, "l / Enter / h    : Open Folder / Parent");
-	mvwprintw(win, 6, 4, "~ / P (or :)     : Jump HOME / Teleport");
-	wattron(win, COLOR_PAIR(3) | A_BOLD);
-	mvwprintw(win, 8, 2, " ⚡ 42 CLUSTER ACTIONS");
-	wattroff(win, COLOR_PAIR(3) | A_BOLD);
-	mvwprintw(win, 9, 4, "s / u            : Link / Unlink Goinfre");
-	mvwprintw(win, 10, 4, "H / b            : Heal Station / Bootstrap");
-	mvwprintw(win, 11, 4, "T / Z            : Empty Trash / Inject .zshrc");
-	mvwprintw(win, 12, 4, "C / K            : 9 Presets / Quick Nuke");
+	mvwprintw(win, 4, 4, "j / k / Arrows   : Navigate Rows");
+	mvwprintw(win, 5, 4, "g / G / Home/End : Jump to Top / Bottom");
+	mvwprintw(win, 6, 4, "PgUp / PgDn      : Fast Viewport Scroll");
+	mvwprintw(win, 7, 4, "l / Enter / h    : Open Folder / Parent");
+	mvwprintw(win, 8, 4, "~ / P (or :)     : Jump HOME / Teleport");
+	mvwprintw(win, 9, 4, "/                : Spotlight Search");
+	mvwprintw(win, 10, 4, "o                : Cycle Sort Modes");
+	mvwprintw(win, 11, 4, "A / a / r        : Actual Size / Dotfiles / Rescan");
 }
 
-static void	render_help_part2(WINDOW *win)
+static void	render_page2_cluster(WINDOW *win)
 {
 	wattron(win, COLOR_PAIR(3) | A_BOLD);
-	mvwprintw(win, 14, 2, " 🛠️ SELECTION & TOOLS");
+	mvwprintw(win, 2, 2, " ⚡ 42 CLUSTER & GOINFRE HEALER (TAB 2/3)");
 	wattroff(win, COLOR_PAIR(3) | A_BOLD);
-	mvwprintw(win, 15, 4, "Space / v / U    : Mark / Invert / Clear");
-	mvwprintw(win, 16, 4, "d / x            : Safe Delete");
-	mvwprintw(win, 17, 4, "p / e / t / !    : Peek / Edit / Shell / Exec");
-	mvwprintw(win, 18, 4, "A / a / o / r    : Size / Hidden / Sort / Reload");
-	mvwprintw(win, 19, 4, "E / /            : Export Report / Search");
+	mvwprintw(win, 4, 4, "s                : Move to Goinfre & Link");
+	mvwprintw(win, 5, 4, "u                : Restore to HOME");
+	mvwprintw(win, 6, 4, "H                : Station Healer (Fix Symlinks)");
+	mvwprintw(win, 7, 4, "b                : Bootstrap Tools to Goinfre");
+	mvwprintw(win, 8, 4, "T / Z            : Empty Trash / Inject .zshrc");
+	mvwprintw(win, 9, 4, "C / K            : 9 Clean Presets / Nuke Junk");
+	mvwprintw(win, 10, 4, "E                : Export Markdown Quota Report");
+}
+
+static void	render_page_content(WINDOW *win, int p)
+{
+	werase(win);
+	box(win, 0, 0);
+	if (p == 0)
+		render_page1_nav(win);
+	else if (p == 1)
+		render_page2_cluster(win);
+	else
+	{
+		wattron(win, COLOR_PAIR(3) | A_BOLD);
+		mvwprintw(win, 2, 2, " 🛠️ TOOLS & CLI MODES (TAB 3/3)");
+		wattroff(win, COLOR_PAIR(3) | A_BOLD);
+		mvwprintw(win, 4, 4, "p                : Quick Look File Preview");
+		mvwprintw(win, 5, 4, "e / t / !        : $EDITOR / Subshell / Exec");
+		mvwprintw(win, 6, 4, "Space / v / U    : Mark / Invert / Clear All");
+		mvwprintw(win, 7, 4, "d / x            : Safe Delete");
+		mvwprintw(win, 9, 4, "CLI: ntcl13 / clean42 : Native 9-Tier Clean");
+		mvwprintw(win, 10, 4, "CLI: ft_ncdu --heal   : Headless Healer");
+		mvwprintw(win, 11, 4, "CLI: ft_ncdu --report : Print Quota Summary");
+	}
 	wattron(win, COLOR_PAIR(2) | A_BOLD);
-	mvwprintw(win, 20, 2, " [Press any key to close]");
+	mvwprintw(win, 13, 2, " [Tab / Arrows] Next Tab │ [ESC] Close");
 	wattroff(win, COLOR_PAIR(2) | A_BOLD);
+	wrefresh(win);
 }
 
 void	show_help_modal(void)
 {
 	WINDOW	*win;
-	int		h;
-	int		w;
+	int		p;
+	int		ch;
 
-	h = 22;
-	w = 70;
-	if (LINES < 23 || COLS < 72)
-	{
-		h = LINES - 2;
-		w = COLS - 2;
-	}
-	win = newwin(h, w, (LINES - h) / 2, (COLS - w) / 2);
+	win = newwin(16, 70, (LINES - 16) / 2, (COLS - 70) / 2);
 	if (!win)
 		return ;
-	box(win, 0, 0);
-	wattron(win, COLOR_PAIR(1) | A_BOLD);
-	mvwprintw(win, 1, 2, ":: [  FT_NCDU ALL FEATURES (Press F / ?) ] ::");
-	wattroff(win, COLOR_PAIR(1) | A_BOLD);
-	render_help_part1(win);
-	render_help_part2(win);
-	wrefresh(win);
-	wtimeout(win, -1);
-	wgetch(win);
+	p = 0;
+	while (1)
+	{
+		render_page_content(win, p);
+		ch = wgetch(win);
+		if (ch == 'q' || ch == 27)
+			break ;
+		if (ch == '\t' || ch == KEY_RIGHT || ch == ' ' || ch == 'l')
+			p = (p + 1) % 3;
+		else if (ch == KEY_LEFT || ch == 'h')
+			p = (p + 2) % 3;
+	}
 	delwin(win);
 }
