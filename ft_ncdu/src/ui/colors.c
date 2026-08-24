@@ -70,9 +70,11 @@ void	draw_box(t_rect r, const char *title, int color)
 		tlen = strlen(title);
 		if (tlen + 4 < r.w)
 		{
+			mvaddstr(r.y, r.x + 1, "┤");
 			attron(A_BOLD);
 			mvprintw(r.y, r.x + 2, " %s ", title);
 			wattroff(stdscr, A_BOLD);
+			mvaddstr(r.y, r.x + tlen + 4, "├");
 		}
 	}
 	attroff(COLOR_PAIR(color));

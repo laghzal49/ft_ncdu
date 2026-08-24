@@ -34,7 +34,7 @@ void	render_gauge(char *buf, double pct, int width)
 		buf[1 + i++] = '.';
 	buf[1 + width] = ']';
 	buf[2 + width] = ' ';
-	snprintf(buf + 3 + width, 16, "%4.1f%%", pct);
+	snprintf(buf + 3 + width, 16, "%5.1f%%", pct);
 }
 
 void	render_graph_bar(char *buf, off_t val, off_t max, int w)
@@ -69,7 +69,7 @@ static void	render_home_card(t_rect r, double h_pct)
 	int		h_col;
 	int		w_param;
 
-	draw_box(r, "HOME QUOTA", 1);
+	draw_box(r, "💾 HOME QUOTA", 1);
 	w_param = 6;
 	if (r.w > 32)
 		w_param = 10;
@@ -89,7 +89,7 @@ static void	render_goinfre_card(t_rect r, int has_g, double g_pct, off_t g_free)
 	char	sz_free[16];
 	char	gauge[64];
 
-	draw_box(r, "GOINFRE NVMe", 6);
+	draw_box(r, "⚡ GOINFRE NVMe", 6);
 	if (has_g)
 	{
 		format_size(g_free, sz_free, sizeof(sz_free));
@@ -124,9 +124,9 @@ void	render_top_hud(int max_x)
 	r = (t_rect){1, 0, 3, card_w + 1};
 	render_home_card(r, h_pct);
 	r = (t_rect){1, card_w + 1, 3, card_w + 1};
-	draw_box(r, "INODES", 2);
+	draw_box(r, "📊 INODES", 2);
 	attron(COLOR_PAIR(2) | A_BOLD);
-	mvprintw(2, card_w + 3, "%llu Used Inodes",
+	mvprintw(2, card_w + 3, "%llu Inodes Used",
 		(unsigned long long)(vfs.f_files - vfs.f_ffree));
 	wattroff(stdscr, COLOR_PAIR(2) | A_BOLD);
 	r = (t_rect){1, (card_w + 1) * 2, 3, max_x - (card_w + 1) * 2};
