@@ -79,10 +79,10 @@ void	render_status_footer(int max_y, int max_x)
 	printw(" %d items, %s used │ Marked: %d │ %s ",
 		g_state.filtered_count, sz, count_marked_items(), get_sort_tag());
 	attroff(COLOR_PAIR(7));
-	if (max_x > 34)
+	if (max_x > 36)
 	{
 		attron(COLOR_PAIR(11));
-		mvprintw(foot_y, max_x - 18, " ⌘? Help │ ⌘Q Quit ");
+		mvprintw(foot_y, max_x - 22, " [F / ?] Features │ ⌘Q ");
 		attroff(COLOR_PAIR(11));
 	}
 }

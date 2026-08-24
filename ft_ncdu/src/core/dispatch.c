@@ -84,7 +84,7 @@ void	handle_action_keys(int ch)
 		action_cleaning_presets();
 	else if (ch == 'K')
 		action_nuke_junk();
-	else if (ch == '?')
+	else if (ch == '?' || ch == 'F' || ch == 'm')
 		show_help_modal();
 	else if (ch == ' ' && g_state.filtered_count > 0)
 	{
