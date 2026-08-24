@@ -20,4 +20,3 @@ norm:
 	@$(MAKE) -C ft_ncdu norm
 
 .PHONY: all clean fclean re install uninstall norm
-

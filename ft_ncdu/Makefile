@@ -3,18 +3,26 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: laghzal <laghzal@student.1337.ma>          +#+  +:+       +#+         #
+#    By: tlaghzal <tlaghzal@student.1337.ma>       +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
-#    Created: 2026/08/22 22:45:00 by laghzal           #+#    #+#              #
-#    Updated: 2026/08/22 22:45:00 by laghzal          ###   ########.fr        #
+#    Created: 2026/08/22 22:45:00 by tlaghzal          #+#    #+#              #
+#    Updated: 2026/08/24 22:00:00 by tlaghzal         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 NAME        = ft_ncdu
 
-CC          = gcc
-CFLAGS      = -Wall -Wextra -Werror -O3 -march=native -Iincludes
-LDFLAGS     = -lncurses -pthread
+UNAME_S     := $(shell uname -s)
+
+ifeq ($(UNAME_S),Darwin)
+    CC      ?= clang
+    CFLAGS  ?= -Wall -Wextra -Werror -O3 -Iincludes
+    LDFLAGS ?= -lncurses -lpthread
+else
+    CC      ?= gcc
+    CFLAGS  ?= -Wall -Wextra -Werror -O3 -march=native -Iincludes
+    LDFLAGS ?= -lncurses -pthread
+endif
 
 SRC_DIR     = src
 OBJ_DIR     = obj
@@ -85,6 +93,5 @@ uninstall:
 
 norm:
 	@norminette src includes || true
-
 
 .PHONY: all clean fclean re install uninstall norm
