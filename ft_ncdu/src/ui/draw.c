@@ -51,6 +51,17 @@ static void	render_search_footer(int foot_y)
 	wattroff(stdscr, COLOR_PAIR(3) | A_BOLD);
 }
 
+static const char	*get_sort_tag(void)
+{
+	if (g_state.sort_mode == SORT_SIZE_ASC)
+		return ("Sort: Size▲");
+	if (g_state.sort_mode == SORT_NAME_ASC)
+		return ("Sort: Name");
+	if (g_state.sort_mode == SORT_MTIME_DESC)
+		return ("Sort: Date");
+	return ("Sort: Size▼");
+}
+
 void	render_status_footer(int max_y, int max_x)
 {
 	char	sz[16];
@@ -67,10 +78,10 @@ void	render_status_footer(int max_y, int max_x)
 	attroff(COLOR_PAIR(5) | A_BOLD);
 	format_size(g_state.total_disk_usage, sz, sizeof(sz));
 	attron(COLOR_PAIR(7));
-	printw(" Items: %d (%s) │ Marked: %d ",
-		g_state.filtered_count, sz, count_marked_items());
+	printw(" Items: %d (%s) │ Marked: %d │ %s ",
+		g_state.filtered_count, sz, count_marked_items(), get_sort_tag());
 	attroff(COLOR_PAIR(7));
-	if (max_x > 20)
+	if (max_x > 30)
 	{
 		attron(COLOR_PAIR(11));
 		mvprintw(foot_y, max_x - 14, " '?' For Help ");

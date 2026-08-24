@@ -74,8 +74,9 @@ static void	render_command_deck(t_rect r, int mid_y, int rx)
 	mvprintw(mid_y + 3, rx, "[H] Heal Station    [T] Empty Trash");
 	mvprintw(mid_y + 4, rx, "[C] Clean Presets   [b] Bootstrap Tools");
 	mvprintw(mid_y + 5, rx, "[p] Scroll Peek     [Z] Inject .zshrc");
-	mvprintw(mid_y + 6, rx, "[A] Size Mode       [a] Toggle Dotfiles");
-	mvprintw(mid_y + 7, rx, "[o] Sort Mode       [E] Export Report");
+	mvprintw(mid_y + 6, rx, "[o] Sort Mode       [r] Rescan Tree");
+	mvprintw(mid_y + 7, rx, "[e] Open $EDITOR    [t] Subshell");
+	mvprintw(mid_y + 8, rx, "[A] Size Mode       [E] Export Report");
 }
 
 void	render_inspector(t_rect r, int split_x)
@@ -96,6 +97,6 @@ void	render_inspector(t_rect r, int split_x)
 	}
 	pthread_mutex_unlock(&g_state.lock);
 	mid_y = r.y + 9;
-	if (mid_y < r.y + r.h - 9)
+	if (mid_y < r.y + r.h - 10)
 		render_command_deck(r, mid_y, rx);
 }

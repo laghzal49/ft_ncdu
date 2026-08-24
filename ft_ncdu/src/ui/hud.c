@@ -19,8 +19,8 @@ void	render_gauge(char *buf, double pct, int width)
 
 	if (width < 2)
 		width = 2;
-	if (width > 20)
-		width = 20;
+	if (width > 16)
+		width = 16;
 	filled = (int)((pct / 100.0) * width);
 	if (filled > width)
 		filled = width;
@@ -71,7 +71,7 @@ static void	render_home_card(t_rect r, double h_pct)
 
 	draw_box(r, "HOME QUOTA", 1);
 	w_param = 6;
-	if (r.w > 30)
+	if (r.w > 32)
 		w_param = 10;
 	render_gauge(gauge, h_pct, w_param);
 	h_col = 2;
@@ -89,19 +89,19 @@ static void	render_goinfre_card(t_rect r, int has_g, double g_pct, off_t g_free)
 	char	sz_free[16];
 	char	gauge[64];
 
-	draw_box(r, "GOINFRE NVMe", 1);
+	draw_box(r, "GOINFRE NVMe", 6);
 	if (has_g)
 	{
 		format_size(g_free, sz_free, sizeof(sz_free));
-		render_gauge(gauge, g_pct, 8);
+		render_gauge(gauge, g_pct, 6);
 		attron(COLOR_PAIR(6) | A_BOLD);
-		mvprintw(r.y + 1, r.x + 2, "%s (%s Free)", gauge, sz_free);
+		mvprintw(r.y + 1, r.x + 2, "%s Free (%s)", sz_free, gauge);
 		wattroff(stdscr, COLOR_PAIR(6) | A_BOLD);
 	}
 	else
 	{
 		attron(COLOR_PAIR(7));
-		mvprintw(r.y + 1, r.x + 2, "/tmp Fallback Pool");
+		mvprintw(r.y + 1, r.x + 2, "/tmp Local Fallback");
 		attroff(COLOR_PAIR(7));
 	}
 }
@@ -124,9 +124,11 @@ void	render_top_hud(int max_x)
 	r = (t_rect){1, 0, 3, card_w + 1};
 	render_home_card(r, h_pct);
 	r = (t_rect){1, card_w + 1, 3, card_w + 1};
-	draw_box(r, "INODES", 1);
-	mvprintw(2, card_w + 3, "Inodes: %llu used",
+	draw_box(r, "INODES", 2);
+	attron(COLOR_PAIR(2) | A_BOLD);
+	mvprintw(2, card_w + 3, "%llu Used Inodes",
 		(unsigned long long)(vfs.f_files - vfs.f_ffree));
+	wattroff(stdscr, COLOR_PAIR(2) | A_BOLD);
 	r = (t_rect){1, (card_w + 1) * 2, 3, max_x - (card_w + 1) * 2};
 	render_goinfre_card(r, statvfs("/goinfre", &vfsg) == 0, 0.0,
 		(off_t)vfsg.f_bfree * vfsg.f_frsize);
