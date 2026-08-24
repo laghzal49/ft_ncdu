@@ -15,9 +15,10 @@
 
 # include "ft_ncdu.h"
 
-# define PRESET_COUNT 8
+# define PRESET_COUNT 9
 
 extern const t_clean_preset	g_clean_presets[PRESET_COUNT];
+
 extern const char			*g_bootstrap_targets[];
 extern const char			*g_protected_paths[];
 extern const char			*g_shell_exports[];

@@ -47,6 +47,8 @@ static void	calc_subitem(const char *path, const char *name,
 	snprintf(subpath, sizeof(subpath), "%.2048s/%.256s", path, name);
 	if (lstat(subpath, &st) != 0)
 		return ;
+	if (g_state.root_dev != 0 && st.st_dev != g_state.root_dev)
+		return ;
 	if (S_ISDIR(st.st_mode))
 		calculate_dir_recursive(subpath, out_s, out_d);
 	else

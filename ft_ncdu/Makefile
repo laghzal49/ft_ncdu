@@ -22,6 +22,7 @@ OBJ_DIR     = obj
 SRCS        = $(SRC_DIR)/main.c \
               $(SRC_DIR)/core/scanner.c \
               $(SRC_DIR)/core/worker.c \
+              $(SRC_DIR)/core/nav.c \
               $(SRC_DIR)/core/events.c \
               $(SRC_DIR)/core/dispatch.c \
               $(SRC_DIR)/actions/delete.c \

@@ -39,8 +39,8 @@ static void	render_help_lines(WINDOW *win)
 	mvwprintw(win, 3, 2, " NAVIGATION");
 	wattroff(win, COLOR_PAIR(3) | A_BOLD);
 	mvwprintw(win, 4, 4, "j / k / Arrows   : Up / Down");
-	mvwprintw(win, 5, 4, "l / Enter        : Open Dir");
-	mvwprintw(win, 6, 4, "h / Backspace    : Parent Dir");
+	mvwprintw(win, 5, 4, "g / G / PgUp/PgDn: Top / Bottom / Page");
+	mvwprintw(win, 6, 4, "l / Enter / h    : Open / Parent Dir");
 	wattron(win, COLOR_PAIR(3) | A_BOLD);
 	mvwprintw(win, 8, 2, " 42 CLUSTER ACTIONS");
 	wattroff(win, COLOR_PAIR(3) | A_BOLD);
@@ -51,10 +51,10 @@ static void	render_help_lines(WINDOW *win)
 	wattron(win, COLOR_PAIR(3) | A_BOLD);
 	mvwprintw(win, 14, 2, " SELECTION & TOOLS");
 	wattroff(win, COLOR_PAIR(3) | A_BOLD);
-	mvwprintw(win, 15, 4, "Space            : Toggle Mark");
-	mvwprintw(win, 16, 4, "d / x            : Delete Items");
-	mvwprintw(win, 17, 4, "p / P            : Peek File / Goto Path");
-	mvwprintw(win, 18, 4, "A / a / o        : Mode / Dotfiles / Sort");
+	mvwprintw(win, 15, 4, "Space / v / U    : Mark / Invert / Clear");
+	mvwprintw(win, 16, 4, "d / x / e / t / !: Delete / Edit / Shell / Exec");
+	mvwprintw(win, 17, 4, "p / P / E        : Peek / Goto Path / Report");
+	mvwprintw(win, 18, 4, "A / a / o / r    : Mode / Hidden / Sort / Rescan");
 	wattron(win, COLOR_PAIR(2) | A_BOLD);
 	mvwprintw(win, 20, 2, " Press any key to return...");
 	wattroff(win, COLOR_PAIR(2) | A_BOLD);

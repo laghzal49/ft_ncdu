@@ -42,7 +42,7 @@ static void	handle_search_input(int ch)
 
 static void	process_input_key(int ch, int max_y)
 {
-	if (ch == 'q')
+	if (ch == 'q' || ch == KEY_RESIZE)
 		return ;
 	if (ch == '/')
 		g_state.is_searching = 1;

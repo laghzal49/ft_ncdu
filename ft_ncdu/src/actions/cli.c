@@ -21,7 +21,7 @@ static void	exec_clean_loop(const char *home)
 	while (i < PRESET_COUNT)
 	{
 		printf("  -> Cleaning: %s...\n", g_clean_presets[i].title);
-		if (asprintf(&cmd, g_clean_presets[i].command_fmt, home, home) != -1)
+		if (asprintf(&cmd, g_clean_presets[i].command_fmt, home) != -1)
 		{
 			if (system(cmd))
 				(void)0;

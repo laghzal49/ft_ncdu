@@ -92,6 +92,7 @@ typedef struct s_app_state
 	volatile int	abort_scan;
 	pthread_mutex_t	lock;
 	int				spinner_frame;
+	dev_t			root_dev;
 	size_t			unreadable_count;
 	size_t			broken_links_count;
 }	t_app_state;
@@ -142,7 +143,6 @@ void	render_gauge(char *buf, double pct, int width);
 void	render_graph_bar(char *buf, off_t val, off_t max, int w);
 
 /* Action Handlers */
-
 void	action_delete(void);
 void	action_symlink_goinfre(void);
 void	action_unlink_goinfre(void);
@@ -162,6 +162,7 @@ void	action_edit(void);
 void	action_shell(void);
 void	action_batch_invert(void);
 void	action_batch_unmark(void);
+void	action_cycle_sort_mode(void);
 
 /* Headless CLI Operations */
 int		run_cli_clean(void);

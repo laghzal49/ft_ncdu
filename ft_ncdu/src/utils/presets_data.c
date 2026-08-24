@@ -17,60 +17,70 @@ const t_clean_preset	g_clean_presets[PRESET_COUNT] = {
 	'1',
 	"42 C / C++ Dev Output",
 	"Wipe *.o, *.a, *.dSYM, vgcore.*, clangd",
-	"find %s -type f \\( -name \"*.o\" -o -name \"*.a\" -o -name \"*.out\" "
-	"-o -name \"core.*\" -o -name \"vgcore.*\" \\) -delete 2>/dev/null; "
-	"rm -rf %s/.cache/clangd 2>/dev/null"
+	"sh -c 'cd \"%s\" && find . -type f \\( -name \"*.o\" -o -name \"*.a\" "
+	"-o -name \"*.out\" -o -name \"core.*\" -o -name \"vgcore.*\" \\) "
+	"-delete 2>/dev/null; rm -rf .cache/clangd CMakeCache.txt 2>/dev/null'"
 },
 {
 	'2',
-	"AI & Python ML Caches",
-	"Purge HuggingFace, PyTorch, Triton & pycache",
-	"find %s -type d \\( -name \"__pycache__\" -o -name \".pytest_cache\" "
-	"-o -name \".mypy_cache\" \\) -prune -exec rm -rf {} + 2>/dev/null; "
-	"rm -rf %s/.cache/huggingface %s/.cache/torch %s/.cache/triton 2>/dev/null"
+	"Francinette & Testers",
+	"Purge Francinette temp logs & coverage files",
+	"sh -c 'cd \"%s\" && rm -rf francinette/temp .francinette/logs "
+	"tests/valgrind*.log 2>/dev/null; find . -type f \\( -name \"*.gcda\" "
+	"-o -name \"*.gcno\" \\) -delete 2>/dev/null'"
 },
 {
 	'3',
-	"Web & Transcendence",
-	"Purge node_modules, .next, npm & yarn caches",
-	"find %s -name \"node_modules\" -type d -prune -exec rm -rf {} + "
-	"2>/dev/null; rm -rf %s/.npm/_cacache %s/.yarn/cache %s/.pnpm-store "
-	"2>/dev/null"
+	"AI & Python ML Caches",
+	"Purge HuggingFace, PyTorch, Triton & pycache",
+	"sh -c 'cd \"%s\" && find . -type d \\( -name \"__pycache__\" -o "
+	"-name \".pytest_cache\" -o -name \".mypy_cache\" \\) -prune -exec "
+	"rm -rf {} + 2>/dev/null; rm -rf .cache/huggingface .cache/torch "
+	".cache/triton .cache/ollama .cache/pip 2>/dev/null'"
 },
 {
 	'4',
-	"Browser & Electron Caches",
-	"Wipe Chrome, Brave, Slack, Discord & Spotify",
-	"rm -rf %s/.cache/google-chrome %s/.cache/chromium %s/.cache/brave "
-	"%s/.var/app/com.discordapp.Discord/cache "
-	"%s/.var/app/com.slack.Slack/cache 2>/dev/null"
+	"Web & Transcendence",
+	"Purge node_modules, .next, npm & yarn caches",
+	"sh -c 'cd \"%s\" && find . -name \"node_modules\" -type d -prune "
+	"-exec rm -rf {} + 2>/dev/null; rm -rf .npm/_cacache .yarn/cache "
+	".pnpm-store .next .turbo 2>/dev/null'"
 },
 {
 	'5',
-	"Docker Cluster Prune",
-	"Run docker system prune -a --volumes -f",
-	"docker system prune -a --volumes -f 2>/dev/null; "
-	"rm -rf %s/.docker/*/cache 2>/dev/null"
+	"Browser & Electron Apps",
+	"Wipe Chrome, Brave, VS Code, Discord & Slack",
+	"sh -c 'cd \"%s\" && rm -rf .cache/google-chrome .cache/chromium "
+	".cache/brave .cache/mozilla/firefox .var/app/*/cache "
+	".config/Code/Cache* .config/Code/CachedData .config/discord/Cache* "
+	"2>/dev/null'"
 },
 {
 	'6',
-	"Norminette & Shell Logs",
-	"Wipe norminette cache, .zcompdump & X11 logs",
-	"rm -rf %s/.cache/norminette %s/.zcompdump* %s/.xsession-errors* "
-	"2>/dev/null"
+	"Docker Cluster Prune",
+	"Run docker system prune -a --volumes -f",
+	"sh -c 'docker system prune -a --volumes -f 2>/dev/null; "
+	"cd \"%s\" && rm -rf .docker/*/cache 2>/dev/null'"
 },
 {
 	'7',
-	"Desktop Trash Bin",
-	"Purge ~/.local/share/Trash and ~/.Trash",
-	"rm -rf %s/.local/share/Trash/* %s/.Trash/* 2>/dev/null"
+	"Norminette & Shell Logs",
+	"Wipe norminette cache, .zcompdump & X11 logs",
+	"sh -c 'cd \"%s\" && rm -rf .cache/norminette .zcompdump* "
+	".xsession-errors* .cache/valgrind 2>/dev/null'"
 },
 {
 	'8',
-	"Nuclear Cluster Wipe",
+	"Desktop Trash Bin",
+	"Purge ~/.local/share/Trash and ~/.Trash",
+	"sh -c 'cd \"%s\" && rm -rf .local/share/Trash/* .Trash/* 2>/dev/null'"
+},
+{
+	'9',
+	"Nuclear 1337 Wipe",
 	"One-shot deep clean across all cache tiers",
-	"rm -rf %s/.cache/* %s/.local/share/Trash/* %s/.42* %s/.zcompdump* "
-	"2>/dev/null"
+	"sh -c 'cd \"%s\" && rm -rf .cache/* .local/share/Trash/* .42* "
+	".zcompdump* .var/app/*/cache francinette/temp 2>/dev/null'"
 }
 };
 

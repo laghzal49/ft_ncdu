@@ -95,14 +95,16 @@ At 42 / 1337 campuses (Benguerir, Khouribga, Med, Paris, Lyon, etc.), students f
 
 Press `C` inside the TUI (or run `ft_ncdu --clean`) to access targeted cleaning modules:
 
-1. **`[1] 42 C / C++ Dev Output`** — Wipes `*.o`, `*.a`, `*.dSYM`, `*.out`, `vgcore.*`, `core.*`, `.cache/clangd`, `CMakeCache.txt`, and `CMakeFiles`.
-2. **`[2] AI & Python ML Caches`** — Wipes Hugging Face hub models, PyTorch checkpoints, Triton cache, Ollama temps, `__pycache__`, `.pytest_cache`, and `*.pyc`.
-3. **`[3] Web & 42 Transcendence`** — Purges `node_modules`, `.next`, `.turbo`, and global caches for NPM (`_cacache`), Yarn, and pnpm.
-4. **`[4] Browser & Electron Bloat`** — Wipes GPU caches, ServiceWorker caches, and code caches for Google Chrome, Chromium, Brave, Slack, Discord, and Spotify.
-5. **`[5] Docker Cluster Storage`** — Runs full `docker system prune -a --volumes -f` and removes desktop cache.
-6. **`[6] Norminette & Cluster Logs`** — Clears Norminette cache, X11 session logs, `~/.zcompdump*`, and Valgrind logs.
-7. **`[7] Empty Trash Bin`** — Purges desktop trash bin.
-8. **`[8] Nuclear Cluster Wipe`** — One-shot safe wipe across all safe cache and build categories!
+1. **`[1] 42 C / C++ Dev Output`** — Wipes `*.o`, `*.a`, `*.dSYM`, `*.out`, `vgcore.*`, `core.*`, `.cache/clangd`, and `CMakeCache.txt`.
+2. **`[2] Francinette & Testers`** — Wipes `~/francinette/temp`, `.francinette/logs`, `tests/valgrind*.log`, `*.gcda`, and `*.gcno`.
+3. **`[3] AI & Python ML Caches`** — Wipes Hugging Face hub models, PyTorch checkpoints, Triton cache, Ollama temps, `__pycache__`, `.pytest_cache`, and pip cache.
+4. **`[4] Web & 42 Transcendence`** — Purges `node_modules`, `.next`, `.turbo`, and global caches for NPM (`_cacache`), Yarn, and pnpm.
+5. **`[5] Browser & Electron Bloat`** — Wipes GPU caches, ServiceWorker caches, and code caches for Google Chrome, Chromium, Brave, VS Code (`.config/Code/Cache*`), Slack, Discord, and Spotify.
+6. **`[6] Docker Cluster Storage`** — Runs full `docker system prune -a --volumes -f` and removes desktop cache.
+7. **`[7] Norminette & Cluster Logs`** — Clears Norminette cache, X11 session logs, `~/.zcompdump*`, and Valgrind logs.
+8. **`[8] Empty Trash Bin`** — Purges desktop trash bin (`~/.local/share/Trash` and `~/.Trash`).
+9. **`[9] Nuclear 1337 Wipe`** — One-shot safe wipe across all safe cache and build categories!
+
 
 ---
 

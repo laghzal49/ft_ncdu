@@ -40,8 +40,7 @@ static void	exec_selected_preset(int ch)
 	while (i < PRESET_COUNT)
 	{
 		if (ch == g_clean_presets[i].key && asprintf(&cmd,
-				g_clean_presets[i].command_fmt, g_state.current_dir,
-				g_state.current_dir) != -1)
+				g_clean_presets[i].command_fmt, g_state.current_dir) != -1)
 		{
 			if (system(cmd))
 				(void)0;

@@ -66,6 +66,23 @@ void	action_export_report(void)
 	confirm_modal("SUCCESS", "Exported report to quota_report.md!");
 }
 
+void	action_cycle_sort_mode(void)
+{
+	if (g_state.sort_mode == SORT_SIZE_DESC)
+		g_state.sort_mode = SORT_SIZE_ASC;
+	else if (g_state.sort_mode == SORT_SIZE_ASC)
+		g_state.sort_mode = SORT_NAME_ASC;
+	else if (g_state.sort_mode == SORT_NAME_ASC)
+		g_state.sort_mode = SORT_MTIME_DESC;
+	else
+		g_state.sort_mode = SORT_SIZE_DESC;
+	pthread_mutex_lock(&g_state.lock);
+	qsort(g_state.entries, g_state.count,
+		sizeof(t_file_entry), compare_entries);
+	pthread_mutex_unlock(&g_state.lock);
+	apply_filter();
+}
+
 void	print_cli_version(void)
 {
 	printf("%s v%s - 42 / 1337 Cluster Storage Suite\n",
