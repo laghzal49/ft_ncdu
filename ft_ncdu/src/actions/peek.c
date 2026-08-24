@@ -89,10 +89,10 @@ static void	peek_scroll_loop(WINDOW *win, char **lines, int count, int is_bin)
 		werase(win);
 		box(win, 0, 0);
 		wattron(win, COLOR_PAIR(1) | A_BOLD);
-		mvwprintw(win, 1, 2, ":: [ FILE PEEK ] :: (%d lines)", count);
+		mvwprintw(win, 1, 2, ":: [  QUICK LOOK ] :: (%d lines)", count);
 		wattroff(win, COLOR_PAIR(1) | A_BOLD);
 		if (is_bin)
-			mvwprintw(win, 3, 2, "[Binary File]");
+			mvwprintw(win, 3, 2, "[Binary File Preview Unavailable]");
 		else if (count > 0)
 			render_peek_lines(win, lines, count, scroll);
 		wrefresh(win);

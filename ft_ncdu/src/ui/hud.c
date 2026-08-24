@@ -101,7 +101,7 @@ static void	render_goinfre_card(t_rect r, int has_g, double g_pct, off_t g_free)
 	else
 	{
 		attron(COLOR_PAIR(7));
-		mvprintw(r.y + 1, r.x + 2, "/tmp Local Fallback");
+		mvprintw(r.y + 1, r.x + 2, "/tmp Fallback Storage");
 		attroff(COLOR_PAIR(7));
 	}
 }

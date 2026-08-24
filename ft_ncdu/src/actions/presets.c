@@ -60,7 +60,7 @@ void	action_cleaning_presets(void)
 			(LINES - (int)PRESET_COUNT - 8) / 2, (COLS - 76) / 2);
 	box(win, 0, 0);
 	wattron(win, COLOR_PAIR(1) | A_BOLD);
-	mvwprintw(win, 1, 2, ":: [ 1337 / 42 CLEANING PRESETS ] ::");
+	mvwprintw(win, 1, 2, ":: [  macOS 42 CLEANING PRESETS ] ::");
 	wattroff(win, COLOR_PAIR(1) | A_BOLD);
 	render_preset_list(win);
 	wrefresh(win);

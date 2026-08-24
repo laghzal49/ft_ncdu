@@ -17,34 +17,32 @@ static void	render_header_bar(int max_x)
 	char	breadcrumbs[PATH_MAX_LEN];
 	int		b_len;
 
-	attron(COLOR_PAIR(5) | A_BOLD);
-	mvprintw(0, 0, " 1337 | 42 ");
-	attroff(COLOR_PAIR(5) | A_BOLD);
+	attron(COLOR_PAIR(4) | A_BOLD);
+	mvprintw(0, 1, "● ");
+	attron(COLOR_PAIR(3));
+	printw("● ");
+	attron(COLOR_PAIR(2));
+	printw("●");
+	attroff(COLOR_PAIR(2) | A_BOLD);
 	attron(COLOR_PAIR(11));
-	printw(" %s v%s ", APP_NAME, APP_VERSION);
+	mvprintw(0, 8, "  1337 | 42 ");
 	attroff(COLOR_PAIR(11));
-	if (g_state.is_scanning)
-	{
-		attron(COLOR_PAIR(3) | A_BOLD);
-		printw(" [SCANNING DIRECTORY TREE...] ");
-		wattroff(stdscr, COLOR_PAIR(3) | A_BOLD);
-	}
-	else
-	{
-		b_len = max_x - 44;
-		if (b_len < 6)
-			b_len = 6;
-		format_breadcrumbs(g_state.current_dir, breadcrumbs, b_len);
-		attron(COLOR_PAIR(1) | A_BOLD);
-		printw(" %s ", breadcrumbs);
-		wattroff(stdscr, COLOR_PAIR(1) | A_BOLD);
-	}
+	attron(COLOR_PAIR(5) | A_BOLD);
+	printw(" %s v%s ", APP_NAME, APP_VERSION);
+	wattroff(stdscr, COLOR_PAIR(5) | A_BOLD);
+	b_len = max_x - 48;
+	if (b_len < 6)
+		b_len = 6;
+	format_breadcrumbs(g_state.current_dir, breadcrumbs, b_len);
+	attron(COLOR_PAIR(1) | A_BOLD);
+	printw(" 📁 %s ", breadcrumbs);
+	wattroff(stdscr, COLOR_PAIR(1) | A_BOLD);
 }
 
 static void	render_search_footer(int foot_y)
 {
 	attron(COLOR_PAIR(10) | A_BOLD);
-	mvprintw(foot_y, 0, " SEARCH ");
+	mvprintw(foot_y, 0, " 🔍 SPOTLIGHT ");
 	attroff(COLOR_PAIR(10) | A_BOLD);
 	attron(COLOR_PAIR(3) | A_BOLD);
 	printw(" %s_ (ESC clear, Enter apply)", g_state.search_query);
@@ -74,17 +72,17 @@ void	render_status_footer(int max_y, int max_x)
 		return ;
 	}
 	attron(COLOR_PAIR(5) | A_BOLD);
-	mvprintw(foot_y, 0, " NORMAL ");
+	mvprintw(foot_y, 0, "  FINDER ");
 	attroff(COLOR_PAIR(5) | A_BOLD);
 	format_size(g_state.total_disk_usage, sz, sizeof(sz));
 	attron(COLOR_PAIR(7));
-	printw(" Items: %d (%s) │ Marked: %d │ %s ",
+	printw(" %d items, %s used │ Marked: %d │ %s ",
 		g_state.filtered_count, sz, count_marked_items(), get_sort_tag());
 	attroff(COLOR_PAIR(7));
-	if (max_x > 30)
+	if (max_x > 34)
 	{
 		attron(COLOR_PAIR(11));
-		mvprintw(foot_y, max_x - 14, " '?' For Help ");
+		mvprintw(foot_y, max_x - 18, " ⌘? Help │ ⌘Q Quit ");
 		attroff(COLOR_PAIR(11));
 	}
 }

@@ -54,7 +54,7 @@ static void	render_target_metadata(t_rect r, t_file_entry *cur,
 	if (nw < 4)
 		nw = 4;
 	attron(COLOR_PAIR(1) | A_BOLD);
-	mvprintw(r.y + 1, rx, "TARGET METADATA");
+	mvprintw(r.y + 1, rx, "⌘ GET INFO");
 	wattroff(stdscr, COLOR_PAIR(1) | A_BOLD);
 	mvprintw(r.y + 2, rx, "Name    : %.*s", nw, cur->name);
 	mvprintw(r.y + 3, rx, "Items   : %zu items", cur->items_count);
@@ -68,14 +68,14 @@ static void	render_command_deck(t_rect r, int mid_y, int rx)
 	mvaddstr(mid_y, r.x, "├");
 	mvaddstr(mid_y, r.x + r.w - 1, "┤");
 	attron(COLOR_PAIR(1) | A_BOLD);
-	mvprintw(mid_y + 1, rx, "42 CLUSTER COMMAND DECK");
+	mvprintw(mid_y + 1, rx, " macOS SHORTCUTS");
 	wattroff(stdscr, COLOR_PAIR(1) | A_BOLD);
 	mvprintw(mid_y + 2, rx, "[s] Link Goinfre    [u] Restore Home");
 	mvprintw(mid_y + 3, rx, "[H] Heal Station    [T] Empty Trash");
 	mvprintw(mid_y + 4, rx, "[C] Clean Presets   [b] Bootstrap Tools");
-	mvprintw(mid_y + 5, rx, "[p] Scroll Peek     [Z] Inject .zshrc");
-	mvprintw(mid_y + 6, rx, "[o] Sort Mode       [r] Rescan Tree");
-	mvprintw(mid_y + 7, rx, "[e] Open $EDITOR    [t] Subshell");
+	mvprintw(mid_y + 5, rx, "[p] Quick Look      [Z] Inject .zshrc");
+	mvprintw(mid_y + 6, rx, "[o] Sort Mode       [r] Reload Finder");
+	mvprintw(mid_y + 7, rx, "[e] Open in $EDITOR [t] Open Terminal");
 	mvprintw(mid_y + 8, rx, "[A] Size Mode       [E] Export Report");
 }
 
@@ -86,7 +86,7 @@ void	render_inspector(t_rect r, int split_x)
 	int				mid_y;
 	t_file_entry	*cur;
 
-	draw_box(r, "TARGET INSPECTOR", 1);
+	draw_box(r, "⌘ GET INFO", 1);
 	rx = split_x + 2;
 	rw = r.w - 4;
 	pthread_mutex_lock(&g_state.lock);

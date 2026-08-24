@@ -96,7 +96,7 @@ void	render_file_table(t_rect r, int split_x)
 	char			sz[16];
 	t_file_entry	*fe;
 
-	draw_box(r, "CLUSTER EXPLORER", 1);
+	draw_box(r, " FINDER EXPLORER", 1);
 	attron(COLOR_PAIR(14) | A_BOLD);
 	mvprintw(r.y + 1, 2, "ST  TYPE     SIZE     ALLOCATION %%       NAME");
 	wattroff(stdscr, COLOR_PAIR(14) | A_BOLD);
