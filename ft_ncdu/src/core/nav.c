@@ -5,8 +5,8 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: tlaghzal <tlaghzal@student.1337.ma>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/08/24 12:00:00 by laghzal           #+#    #+#             */
-/*   Updated: 2026/08/24 22:00:00 by tlaghzal         ###   ########.fr       */
+/*   Created: 2026/08/24 12:00:00 by tlaghzal          #+#    #+#             */
+/*   Updated: 2026/08/27 10:00:00 by tlaghzal         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,6 +68,23 @@ static int	handle_nav_step(int ch, int list_h)
 		return (1);
 	}
 	return (0);
+}
+
+void	action_cycle_sort_mode(void)
+{
+	if (g_state.sort_mode == SORT_SIZE_DESC)
+		g_state.sort_mode = SORT_SIZE_ASC;
+	else if (g_state.sort_mode == SORT_SIZE_ASC)
+		g_state.sort_mode = SORT_NAME_ASC;
+	else if (g_state.sort_mode == SORT_NAME_ASC)
+		g_state.sort_mode = SORT_MTIME_DESC;
+	else
+		g_state.sort_mode = SORT_SIZE_DESC;
+	pthread_mutex_lock(&g_state.lock);
+	qsort(g_state.entries, g_state.count,
+		sizeof(t_file_entry), compare_entries);
+	pthread_mutex_unlock(&g_state.lock);
+	apply_filter();
 }
 
 void	handle_nav_keys(int ch, int list_h)

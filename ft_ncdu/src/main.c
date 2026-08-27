@@ -5,8 +5,8 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: tlaghzal <tlaghzal@student.1337.ma>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/08/22 22:45:00 by laghzal           #+#    #+#             */
-/*   Updated: 2026/08/24 22:00:00 by tlaghzal         ###   ########.fr       */
+/*   Created: 2026/08/22 22:45:00 by tlaghzal          #+#    #+#             */
+/*   Updated: 2026/08/27 10:00:00 by tlaghzal         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,15 +26,23 @@ static void	handle_signal(int sig)
 
 static int	parse_action_flags(int argc, char **argv)
 {
+	int	is_dry_run;
+
+	is_dry_run = 0;
+	if (argc > 2 && (strcmp(argv[2], "--dry-run") == 0
+			|| strcmp(argv[2], "-n") == 0))
+		is_dry_run = 1;
 	if (strcmp(argv[1], "-c") == 0 || strcmp(argv[1], "--clean") == 0)
-		return (run_cli_clean() + 1);
+		return (run_cli_clean(is_dry_run) + 1);
+	if (strcmp(argv[1], "--dry-run") == 0 || strcmp(argv[1], "-n") == 0)
+		return (run_cli_clean(1) + 1);
 	if (strcmp(argv[1], "--heal") == 0)
 		return (run_cli_heal() + 1);
 	if (strcmp(argv[1], "--bootstrap") == 0)
 		return (run_cli_bootstrap() + 1);
 	if (strcmp(argv[1], "--report") == 0)
 	{
-		if (argc > 2)
+		if (argc > 2 && argv[2][0] != '-')
 			return (run_cli_report(argv[2]) + 1);
 		return (run_cli_report(".") + 1);
 	}
@@ -43,9 +51,15 @@ static int	parse_action_flags(int argc, char **argv)
 
 static int	parse_cli_flags(int argc, char **argv)
 {
+	int	is_dry_run;
+
+	is_dry_run = 0;
+	if (argc > 1 && (strcmp(argv[1], "--dry-run") == 0
+			|| strcmp(argv[1], "-n") == 0))
+		is_dry_run = 1;
 	if (strstr(argv[0], "ntcl13") != NULL
 		|| strstr(argv[0], "clean42") != NULL)
-		return (run_cli_clean() + 1);
+		return (run_cli_clean(is_dry_run) + 1);
 	if (argc <= 1)
 		return (0);
 	if (strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "--help") == 0)

@@ -6,7 +6,7 @@
 /*   By: tlaghzal <tlaghzal@student.1337.ma>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/22 22:45:00 by tlaghzal          #+#    #+#             */
-/*   Updated: 2026/08/24 22:00:00 by tlaghzal         ###   ########.fr       */
+/*   Updated: 2026/08/27 10:00:00 by tlaghzal         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,6 +58,7 @@ static void	delete_single_target(t_file_entry *target)
 		"Permanently delete: %.38s?", target->name);
 	if (confirm_modal("DELETE TARGET", modal_message))
 	{
+		log_audit_action("DELETE", target->path, target->name);
 		exec_rm_rf(target->path);
 		start_async_scan(g_state.current_dir);
 	}
@@ -78,7 +79,11 @@ static void	delete_batch_marked(int marked_count)
 	{
 		if (g_state.entries[idx].marked
 			&& !is_protected_target(g_state.entries[idx].path))
+		{
+			log_audit_action("BATCH_DELETE", g_state.entries[idx].path,
+				g_state.entries[idx].name);
 			exec_rm_rf(g_state.entries[idx].path);
+		}
 		idx++;
 	}
 	pthread_mutex_unlock(&g_state.lock);

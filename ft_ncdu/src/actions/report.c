@@ -6,7 +6,7 @@
 /*   By: tlaghzal <tlaghzal@student.1337.ma>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/22 22:45:00 by tlaghzal          #+#    #+#             */
-/*   Updated: 2026/08/24 22:00:00 by tlaghzal         ###   ########.fr       */
+/*   Updated: 2026/08/27 10:00:00 by tlaghzal         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,21 +63,27 @@ void	action_export_report(void)
 	confirm_modal("SUCCESS", "Exported report to quota_report.md!");
 }
 
-void	action_cycle_sort_mode(void)
+int	run_cli_report(const char *target_path)
 {
-	if (g_state.sort_mode == SORT_SIZE_DESC)
-		g_state.sort_mode = SORT_SIZE_ASC;
-	else if (g_state.sort_mode == SORT_SIZE_ASC)
-		g_state.sort_mode = SORT_NAME_ASC;
-	else if (g_state.sort_mode == SORT_NAME_ASC)
-		g_state.sort_mode = SORT_MTIME_DESC;
-	else
-		g_state.sort_mode = SORT_SIZE_DESC;
-	pthread_mutex_lock(&g_state.lock);
-	qsort(g_state.entries, g_state.count,
-		sizeof(t_file_entry), compare_entries);
-	pthread_mutex_unlock(&g_state.lock);
-	apply_filter();
+	struct statvfs	vfs;
+	char			sz_tot[16];
+	char			sz_used[16];
+	char			sz_free[16];
+
+	statvfs(target_path, &vfs);
+	format_size((off_t)vfs.f_blocks * vfs.f_frsize, sz_tot, sizeof(sz_tot));
+	format_size((off_t)(vfs.f_blocks - vfs.f_bfree) * vfs.f_frsize,
+		sz_used, sizeof(sz_used));
+	format_size((off_t)vfs.f_bfree * vfs.f_frsize, sz_free, sizeof(sz_free));
+	printf("\n======================================================\n");
+	printf("  \033[1;36m42 / 1337 CLUSTER STORAGE AUDIT REPORT\033[0m\n");
+	printf("======================================================\n");
+	printf("  Path  : %s\n", target_path);
+	printf("  Quota : %s\n", sz_tot);
+	printf("  Used  : %s\n", sz_used);
+	printf("  Free  : %s\n", sz_free);
+	printf("======================================================\n\n");
+	return (0);
 }
 
 void	print_cli_version(void)
@@ -93,7 +99,9 @@ void	print_cli_help(const char *prog_name)
 	printf("  -h, --help        Show this help message\n");
 	printf("  -v, --version     Show version information\n");
 	printf("  -c, --clean       Run fast cluster cleaning headlessly\n");
+	printf("  -n, --dry-run     Simulate cleanup without deleting\n");
 	printf("  --heal            Repair dangling goinfre symlinks\n");
 	printf("  --bootstrap       Relocate heavy toolchains to goinfre\n");
-	printf("  --report          Print quota summary to stdout\n");
+	printf("  --report          Print quota summary to stdout\n\n");
+	printf("Audit Log: ~/.ft_ncdu_cleanup.log\n");
 }

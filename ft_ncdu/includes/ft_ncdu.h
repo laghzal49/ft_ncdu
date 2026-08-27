@@ -5,8 +5,8 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: tlaghzal <tlaghzal@student.1337.ma>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/08/22 22:45:00 by laghzal           #+#    #+#             */
-/*   Updated: 2026/08/24 22:00:00 by tlaghzal         ###   ########.fr       */
+/*   Created: 2026/08/22 22:45:00 by tlaghzal          #+#    #+#             */
+/*   Updated: 2026/08/27 10:00:00 by tlaghzal         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -165,7 +165,7 @@ void	action_batch_unmark(void);
 void	action_cycle_sort_mode(void);
 
 /* Headless CLI Operations */
-int		run_cli_clean(void);
+int		run_cli_clean(int is_dry_run);
 int		run_cli_heal(void);
 int		run_cli_bootstrap(void);
 int		run_cli_report(const char *target_path);
@@ -185,5 +185,7 @@ int		compare_entries(const void *a, const void *b);
 void	get_goinfre_path(char *dest, size_t dest_len);
 void	init_state_memory(void);
 void	free_state_memory(void);
+void	log_audit_action(const char *action, const char *target,
+			const char *details);
 
 #endif

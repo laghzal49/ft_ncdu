@@ -5,8 +5,8 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: tlaghzal <tlaghzal@student.1337.ma>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/08/22 22:45:00 by laghzal           #+#    #+#             */
-/*   Updated: 2026/08/24 22:00:00 by tlaghzal         ###   ########.fr       */
+/*   Created: 2026/08/22 22:45:00 by tlaghzal          #+#    #+#             */
+/*   Updated: 2026/08/27 10:00:00 by tlaghzal         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,4 +72,34 @@ int	is_protected_target(const char *path)
 		i++;
 	}
 	return (0);
+}
+
+void	log_audit_action(const char *action, const char *target,
+		const char *details)
+{
+	const char	*home_dir;
+	char		log_path[PATH_MAX_LEN];
+	FILE		*fp;
+	time_t		now;
+	struct tm	*t;
+
+	home_dir = getenv("HOME");
+	if (!home_dir)
+		return ;
+	snprintf(log_path, sizeof(log_path), "%.2048s/.ft_ncdu_cleanup.log",
+		home_dir);
+	fp = fopen(log_path, "a");
+	if (!fp)
+		return ;
+	now = time(NULL);
+	t = localtime(&now);
+	if (t && details)
+		fprintf(fp, "[%04d-%02d-%02d %02d:%02d:%02d] [%s] %s (%s)\n",
+			t->tm_year + 1900, t->tm_mon + 1, t->tm_mday,
+			t->tm_hour, t->tm_min, t->tm_sec, action, target, details);
+	else if (t)
+		fprintf(fp, "[%04d-%02d-%02d %02d:%02d:%02d] [%s] %s\n",
+			t->tm_year + 1900, t->tm_mon + 1, t->tm_mday,
+			t->tm_hour, t->tm_min, t->tm_sec, action, target);
+	fclose(fp);
 }
