@@ -3,28 +3,29 @@
 
 [![Norminette](https://img.shields.io/badge/Norminette-100%25%20Passing-brightgreen.svg)](https://github.com/42School/norminette)
 [![Language](https://img.shields.io/badge/Language-C99%20%7C%20POSIX-blue.svg)](https://en.wikipedia.org/wiki/C_(programming_language))
-[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Platform](https://img.shields.io/badge/Platform-macOS%20(Darwin)%20%7C%20Linux-orange.svg)](#)
 [![Threads](https://img.shields.io/badge/Concurrency-16%20Threads-blueviolet.svg)](#)
+[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-A blazing-fast, native C terminal disk usage analyzer, automated cluster quota optimizer, and workstation healer designed specifically for **1337 Coding School** and **42 Network** students.
+A blazing-fast, native C terminal disk usage analyzer, automated cluster quota optimizer, and workstation healer designed specifically for **1337 Coding School** and **42 Network** students across **macOS (iMacs / Apple Silicon)** and **Linux**.
 
 ---
 
 ## ⚡ 1-Line Quick Install
 
-Run this in your terminal on any 42 iMac or Linux workstation:
+Run this single command in your terminal on any 42 workstation:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/laghzal49/ft_ncdu/main/install.sh | bash
 ```
 
-*Auto-clones, compiles with `-O3 -march=native`, installs to `~/.local/bin/`, configures `$PATH`, and sets up shell aliases (`clean`, `space`, `heal`).*
+*Auto-detects OS (macOS / Linux), compiles with `-O3`, installs to `~/.local/bin/`, configures `$PATH`, adds shell aliases (`clean`, `space`, `heal`), and enables the login station-healer hook.*
 
 ---
 
 ## 🚀 Key Highlights & Capabilities
 
-```
+```text
  ● ● ●    1337 | 42  ft_ncdu v2.0.0  📁 /home/student/Projects/ft_ncdu
 ╭─┤ 💾 HOME QUOTA ├──────╮╭─┤ 📊 INODES ├─────────╮╭─┤ ⚡ GOINFRE NVMe ├──────╮
 │ [████████░░░░]  52.4%  ││ 14,290 Inodes Used    ││ 148.2 GB Free (⚡ Pool)  │
@@ -41,30 +42,37 @@ curl -fsSL https://raw.githubusercontent.com/laghzal49/ft_ncdu/main/install.sh |
   FINDER  28 items, 11.0 GB used │ Marked: 0 │ Sort: Size▼ │ [F / ?] Features
 ```
 
-### 1. ⚡ 16-Thread Asynchronous Crawler
+### 1. ⚡ 16-Thread Asynchronous Scanner
 * Spawns 16 worker threads with strided indexing to scan 65,000+ files in milliseconds without freezing the UI.
-* Built-in **POSIX `st_dev` mount boundary shielding** prevents crawler from traversing into `/proc`, `/sys`, or external network mounts.
+* Built-in **POSIX `st_dev` mount boundary shielding** prevents the crawler from traversing into `/proc`, `/sys`, or external network drives.
 
 ### 2. 🧹 9-Tier Native C Fast Cleaner (`clean42` / `ntcl13`)
 Re-engineered natively in C to execute in $<0.2\text{s}$ with before/after `statvfs()` disk space reporting:
-* **Tier 1**: C/C++ build artifacts (`*.o`, `*.a`, `*.so`, `*.dSYM`, `core.*`).
+* **Tier 1**: C/C++ build artifacts (`*.o`, `*.a`, `*.so`, `*.dSYM`, `core.*`, `vgcore.*`).
 * **Tier 2**: Francinette & Unit Testers (`~/francinette/temp`, `.francinette/logs`, `valgrind*.log`, `*.gcda`).
-* **Tier 3**: AI & PyTorch models (`~/.cache/huggingface`, `~/.cache/torch`, `~/.cache/pip`).
-* **Tier 4**: Node.js & Web (`node_modules`, `~/.npm`, `~/.yarn/cache`).
-* **Tier 5**: Browser caches (Chrome, Chromium, Brave, Mozilla).
-* **Tier 6**: IDE caches (VS Code cache, extensions cache, JetBrains).
-* **Tier 7**: Docker & Containers (`docker system prune -a --volumes -f`).
-* **Tier 8**: Norminette logs & temp state (`~/.norminette/logs`, `/tmp/*_${USER}`).
-* **Tier 9**: Desktop Trash & Thumbnails (`~/.local/share/Trash`, `~/.cache/thumbnails`).
+* **Tier 3**: AI & PyTorch models (`~/.cache/huggingface`, `~/.cache/torch`, `~/.cache/pip`, `__pycache__`).
+* **Tier 4**: Node.js & Web (`node_modules`, `~/.npm`, `~/.yarn/cache`, `.next`, `.turbo`).
+* **Tier 5**: Browser & Electron caches (Chrome, Chromium, Brave, Firefox, VS Code, Discord, Slack).
+* **Tier 6**: Docker & Containers (`docker system prune -a --volumes -f`).
+* **Tier 7**: Norminette logs & temp state (`~/.norminette/logs`, `/tmp/*_${USER}`).
+* **Tier 8**: Desktop Trash & Thumbnails (`~/.local/share/Trash`, `~/.Trash`).
+* **Tier 9**: Nuclear 1337 Wipe (One-shot deep purge across all cache tiers).
 
-### 3. 🩹 Station-Hopping Healer (`H`) & Goinfre Engine
-* `[s]` **Goinfre Symlinker**: Moves target project to `/goinfre/$USER/` and creates a symlink on `$HOME`.
-* `[u]` **Goinfre Unlinker**: Restores data back from `/goinfre` to `$HOME` and deletes symlink.
-* `[H]` **Station Healer**: Auto-detects broken `/goinfre` symlinks when changing physical iMacs/PCs and recreates missing target directories so applications don't crash.
-* `[b]` **Auto-Bootstrapper**: Moves heavy caches (`.cargo`, `.rustup`, `.npm`, `.docker`) to `/goinfre`.
+### 3. 🛡️ Safe Dry-Run Simulation & Audit Trail
+* **Dry-Run Mode (`-n` / `--dry-run`)**: Preview what caches would be removed without modifying or deleting any files:
+  ```bash
+  clean42 --dry-run
+  ```
+* **Audit Trail (`~/.ft_ncdu_cleanup.log`)**: Automatically logs every purge, deletion, and healing action with exact timestamps and target paths.
+
+### 4. 🩹 Station-Hopping Healer (`H`) & Living Manifest
+* **How it works**: Since `$HOME` is stored on NFS network storage and follows you to every physical workstation, **the symlinks in `$HOME` act as the living manifest**.
+* When changing workstations, press **`H`** (or run `clean42 --heal`). It uses `readlink()` to inspect all symlinks pointing to `/goinfre/$USER/*` and automatically `mkdir -p`s the missing folder paths on the new machine so VS Code, Docker, and Francinette never crash.
+* `[s]` **Goinfre Symlinker**: Moves target project to `/goinfre/$USER/` and creates a symlink in `$HOME` (uses 0 KB of your strict quota).
+* `[u]` **Goinfre Unlinker**: Restores real data back from `/goinfre` to `$HOME` and removes the symlink.
 * `[Z]` **Quota Bypass Injector**: Injects persistent environment exports into `~/.zshrc`.
 
-### 4. 🍏 macOS-Themed NCurses TUI
+### 5. 🍏 macOS-Themed NCurses TUI
 * **Traffic Lights & Header**: Styled with `● ● ●` window controls and Finder breadcrumbs.
 * **⌘ Get Info Inspector**: Live display of item permissions (`rwxr-xr-x`), exact bytes, and symlink health.
 * **Quick Look (`p`)**: In-terminal scrollable file preview with line numbering and binary detection.
@@ -101,12 +109,18 @@ Re-engineered natively in C to execute in $<0.2\text{s}$ with before/after `stat
 ## 💻 Headless CLI Commands
 
 ```bash
-# Run 9-Tier Native C Fast Cleaner
+# Run 9-Tier Native C Fast Cleaner (<0.2s)
 clean42
 ntcl13
 ft_ncdu -c
 
+# Dry-run simulation (No files removed)
+clean42 --dry-run
+ft_ncdu -c --dry-run
+ft_ncdu -n
+
 # Run Station Healer in headless CLI
+clean42 --heal
 ft_ncdu --heal
 
 # Relocate heavy toolchains to /goinfre
@@ -139,4 +153,5 @@ make norm
 ---
 
 ## 👤 Author
-Developed with ❤️ by **laghzal** for **1337 Coding School & 42 Network** cadets worldwide.
+Developed with ❤️ by **tlaghzal** for **1337 Coding School & 42 Network** cadets worldwide.
+GitHub: [https://github.com/laghzal49/ft_ncdu](https://github.com/laghzal49/ft_ncdu)
