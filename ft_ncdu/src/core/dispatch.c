@@ -76,6 +76,28 @@ static int	handle_goinfre_keys(int ch)
 	return (1);
 }
 
+static void	toggle_selected_mark(void)
+{
+	int			idx;
+	const char	*path;
+
+	pthread_mutex_lock(&g_state.lock);
+	path = g_state.filtered[g_state.selected].path;
+	idx = 0;
+	while (idx < g_state.count)
+	{
+		if (strcmp(g_state.entries[idx].path, path) == 0)
+		{
+			g_state.entries[idx].marked ^= 1;
+			g_state.filtered[g_state.selected].marked
+				= g_state.entries[idx].marked;
+			break ;
+		}
+		idx++;
+	}
+	pthread_mutex_unlock(&g_state.lock);
+}
+
 void	handle_action_keys(int ch)
 {
 	if (handle_goinfre_keys(ch))
@@ -87,11 +109,7 @@ void	handle_action_keys(int ch)
 	else if (ch == '?' || ch == 'f' || ch == 'F' || ch == 'm')
 		show_help_modal();
 	else if (ch == ' ' && g_state.filtered_count > 0)
-	{
-		pthread_mutex_lock(&g_state.lock);
-		g_state.filtered[g_state.selected].marked ^= 1;
-		pthread_mutex_unlock(&g_state.lock);
-	}
+		toggle_selected_mark();
 	else
 		handle_tool_keys(ch);
 }

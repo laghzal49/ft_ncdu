@@ -17,8 +17,14 @@ void	action_goto_path(void)
 	WINDOW	*win;
 	char	input_buffer[PATH_MAX_LEN];
 	char	resolved_path[PATH_MAX_LEN];
+	int		width;
 
-	win = newwin(7, 70, (LINES - 7) / 2, (COLS - 70) / 2);
+	width = COLS - 2;
+	if (width > 70)
+		width = 70;
+	win = newwin(7, width, (LINES - 7) / 2, (COLS - width) / 2);
+	if (!win)
+		return ;
 	box(win, 0, 0);
 	wattron(win, COLOR_PAIR(1) | A_BOLD);
 	mvwprintw(win, 1, 2, ":: [ TELEPORT / GOTO PATH ] ::");
@@ -63,10 +69,16 @@ void	action_custom_command(void)
 {
 	WINDOW	*win;
 	char	command_buffer[512];
+	int		width;
 
 	if (g_state.filtered_count == 0)
 		return ;
-	win = newwin(7, 70, (LINES - 7) / 2, (COLS - 70) / 2);
+	width = COLS - 2;
+	if (width > 70)
+		width = 70;
+	win = newwin(7, width, (LINES - 7) / 2, (COLS - width) / 2);
+	if (!win)
+		return ;
 	box(win, 0, 0);
 	wattron(win, COLOR_PAIR(1) | A_BOLD);
 	mvwprintw(win, 1, 2, ":: [ EXEC COMMAND ON TARGET ] ::");

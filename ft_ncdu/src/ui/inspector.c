@@ -56,7 +56,7 @@ static void	render_target_metadata(t_rect rect, t_file_entry *entry,
 	if (name_width < 4)
 		name_width = 4;
 	attron(COLOR_PAIR(1) | A_BOLD);
-	mvprintw(rect.y + 1, start_x, "⌘ GET INFO");
+	mvprintw(rect.y + 1, start_x, " GET INFO");
 	wattroff(stdscr, COLOR_PAIR(1) | A_BOLD);
 	mvprintw(rect.y + 2, start_x, "Name    : %.*s", name_width, entry->name);
 	mvprintw(rect.y + 3, start_x, "Items   : %zu items", entry->items_count);
@@ -68,10 +68,10 @@ static void	render_target_metadata(t_rect rect, t_file_entry *entry,
 
 static void	render_command_deck(t_rect rect, int divider_y, int start_x)
 {
-	mvaddstr(divider_y, rect.x, "├");
-	mvaddstr(divider_y, rect.x + rect.w - 1, "┤");
+	mvaddstr(divider_y, rect.x, "|");
+	mvaddstr(divider_y, rect.x + rect.w - 1, "|");
 	attron(COLOR_PAIR(1) | A_BOLD);
-	mvprintw(divider_y + 1, start_x, " macOS SHORTCUTS");
+	mvprintw(divider_y + 1, start_x, "macOS SHORTCUTS");
 	wattroff(stdscr, COLOR_PAIR(1) | A_BOLD);
 	mvprintw(divider_y + 2, start_x, "[s] Link Goinfre    [u] Restore Home");
 	mvprintw(divider_y + 3, start_x, "[H] Heal Station    [T] Empty Trash");
@@ -89,7 +89,7 @@ void	render_inspector(t_rect rect, int split_x)
 	int				divider_y;
 	t_file_entry	*active_entry;
 
-	draw_box(rect, "⌘ GET INFO", 1);
+	draw_box(rect, " GET INFO", 1);
 	start_x = split_x + 2;
 	available_width = rect.w - 4;
 	pthread_mutex_lock(&g_state.lock);

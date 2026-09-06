@@ -15,18 +15,21 @@
 static void	render_preset_list(WINDOW *win)
 {
 	size_t	idx;
+	int		height;
+	int		width;
 
+	getmaxyx(win, height, width);
 	idx = 0;
-	while (idx < PRESET_COUNT)
+	while (idx < PRESET_COUNT && 3 + (int)idx < height - 2)
 	{
-		mvwprintw(win, 3 + (int)idx, 2, "[%c] %-22s : %.44s",
+		mvwprintw(win, 3 + (int)idx, 2, "[%c] %-22.22s : %.*s",
 			g_clean_presets[idx].key,
 			g_clean_presets[idx].title,
-			g_clean_presets[idx].desc);
+			width - 32, g_clean_presets[idx].desc);
 		idx++;
 	}
 	wattron(win, COLOR_PAIR(3) | A_BOLD);
-	mvwprintw(win, (int)PRESET_COUNT + 5, 2,
+	mvwprintw(win, height - 2, 2,
 		"Select preset [1-%d] or [ESC]: ", (int)PRESET_COUNT);
 	wattroff(win, COLOR_PAIR(3) | A_BOLD);
 }
@@ -56,12 +59,21 @@ void	action_cleaning_presets(void)
 {
 	WINDOW	*win;
 	int		key_pressed;
+	int		width;
+	int		height;
 
-	win = newwin((int)PRESET_COUNT + 8, 76,
-			(LINES - (int)PRESET_COUNT - 8) / 2, (COLS - 76) / 2);
+	width = COLS - 2;
+	if (width > 76)
+		width = 76;
+	height = LINES - 2;
+	if (height > (int)PRESET_COUNT + 8)
+		height = (int)PRESET_COUNT + 8;
+	win = newwin(height, width, (LINES - height) / 2, (COLS - width) / 2);
+	if (!win)
+		return ;
 	box(win, 0, 0);
 	wattron(win, COLOR_PAIR(1) | A_BOLD);
-	mvwprintw(win, 1, 2, ":: [  macOS 42 CLEANING PRESETS ] ::");
+	mvwprintw(win, 1, 2, ":: [ macOS 42 CLEANING PRESETS ] ::");
 	wattroff(win, COLOR_PAIR(1) | A_BOLD);
 	render_preset_list(win);
 	wrefresh(win);

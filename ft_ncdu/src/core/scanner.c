@@ -56,11 +56,17 @@ static void	run_worker_threads(void)
 {
 	pthread_t	threads[SCAN_THREADS];
 	int			thread_idx;
+	int			created;
 
 	thread_idx = -1;
+	created = 0;
 	while (++thread_idx < SCAN_THREADS)
-		pthread_create(&threads[thread_idx], NULL, scan_thread_worker,
-			(void *)(intptr_t)thread_idx);
+	{
+		if (pthread_create(&threads[created], NULL, scan_thread_worker,
+				(void *)(intptr_t)thread_idx) == 0)
+			created++;
+	}
+	thread_idx = created;
 	while (--thread_idx >= 0)
 		pthread_join(threads[thread_idx], NULL);
 }
@@ -89,6 +95,14 @@ void	start_async_scan(const char *dir_path)
 {
 	pthread_t	thread_id;
 	struct stat	stat_info;
+	char		*path_copy;
+
+	if (!dir_path || stat(dir_path, &stat_info) != 0
+		|| !S_ISDIR(stat_info.st_mode))
+		return ;
+	path_copy = strdup(dir_path);
+	if (!path_copy)
+		return ;
 
 	g_state.abort_scan = 1;
 	while (g_state.is_scanning)
@@ -102,12 +116,19 @@ void	start_async_scan(const char *dir_path)
 	g_state.total_disk_usage = 0;
 	g_state.max_item_size = 0;
 	g_state.root_dev = 0;
-	if (stat(dir_path, &stat_info) == 0)
-		g_state.root_dev = stat_info.st_dev;
+	g_state.unreadable_count = 0;
+	g_state.broken_links_count = 0;
+	g_state.root_dev = stat_info.st_dev;
 	safe_str_copy(g_state.current_dir, dir_path, PATH_MAX_LEN);
 	g_state.abort_scan = 0;
 	g_state.is_scanning = 1;
 	pthread_mutex_unlock(&g_state.lock);
-	pthread_create(&thread_id, NULL, async_scan_orchestrator, strdup(dir_path));
-	pthread_detach(thread_id);
+	if (pthread_create(&thread_id, NULL, async_scan_orchestrator,
+			path_copy) == 0)
+		pthread_detach(thread_id);
+	else
+	{
+		free(path_copy);
+		g_state.is_scanning = 0;
+	}
 }

@@ -55,7 +55,7 @@ static void	render_peek_lines(WINDOW *win, char **lines, int count, int scroll)
 		idx = scroll + i;
 		if (idx >= count)
 			break ;
-		mvwprintw(win, 3 + i, 2, "%4d │ %.*s",
+		mvwprintw(win, 3 + i, 2, "%4d | %.*s",
 			idx + 1, w - 10, lines[idx]);
 		i++;
 	}
@@ -89,7 +89,7 @@ static void	peek_scroll_loop(WINDOW *win, char **lines, int count, int is_bin)
 		werase(win);
 		box(win, 0, 0);
 		wattron(win, COLOR_PAIR(1) | A_BOLD);
-		mvwprintw(win, 1, 2, ":: [  QUICK LOOK ] :: (%d lines)", count);
+		mvwprintw(win, 1, 2, ":: [ QUICK LOOK ] :: (%d lines)", count);
 		wattroff(win, COLOR_PAIR(1) | A_BOLD);
 		if (is_bin)
 			mvwprintw(win, 3, 2, "[Binary File Preview Unavailable]");
@@ -121,6 +121,13 @@ void	action_file_peek(void)
 		return ;
 	count = read_peek_lines(target->path, lines, &is_bin);
 	win = newwin(LINES - 4, COLS - 8, 2, 4);
+	if (!win)
+	{
+		while (count > 0)
+			free(lines[--count]);
+		free(lines);
+		return ;
+	}
 	keypad(win, TRUE);
 	peek_scroll_loop(win, lines, count, is_bin);
 	delwin(win);

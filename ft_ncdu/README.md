@@ -26,21 +26,22 @@ curl -fsSL https://raw.githubusercontent.com/laghzal49/ft_ncdu/main/install.sh |
 ## 🚀 Key Highlights & Capabilities
 
 ```text
- ● ● ●    1337 | 42  ft_ncdu v2.0.0  📁 /home/student/Projects/ft_ncdu
-╭─┤ 💾 HOME QUOTA ├──────╮╭─┤ 📊 INODES ├─────────╮╭─┤ ⚡ GOINFRE NVMe ├──────╮
-│ [████████░░░░]  52.4%  ││ 14,290 Inodes Used    ││ 148.2 GB Free (⚡ Pool)  │
-╰────────────────────────╯╰───────────────────────╯╰──────────────────────────╯
-╭─┤  FINDER EXPLORER ├───────────────────────╮╭─┤ ⌘ GET INFO ├───────────────╮
-│ ST  TYPE     SIZE     ALLOCATION %   NAME   ││ 📁 Name  : minishell         │
-│  ❯   DIR   1.2 GB    [████████]     src/    ││ 📦 Size  : 1.2 GB (1,294 MB) │
-│      FILE  42.0 KB   [█░░░░░░░]     Makefile││ 🔒 Perms : rwxr-xr-x (0755)  │
-│      LINK   0.0 B    [░░░░░░░░]     goinfre ││ 🔗 Link  : -> /goinfre/...   │
-│                                             │├─  macOS SHORTCUTS ──────────┤
-│                                             ││ [s] Link Goinfre  [u] Home   │
-│                                             ││ [p] Quick Look    [T] Trash  │
-╰─────────────────────────────────────────────╯╰──────────────────────────────╯
-  FINDER  28 items, 11.0 GB used │ Marked: 0 │ Sort: Size▼ │ [F / ?] Features
+ o o o   1337 | 42  ft_ncdu v2.0.0  /home/student/Projects/ft_ncdu
++[HOME QUOTA]--------------++[INODES]---------------++[GOINFRE NVMe]----------+
+| [########....]  52.4%     || 14,290 Inodes Used    || 148.2 GB Free          |
++---------------------------++-----------------------++------------------------+
++[FINDER EXPLORER]------------------------------++[GET INFO]------------------+
+| ST  TYPE     SIZE     ALLOCATION %   NAME      || Name  : minishell          |
+|  >   DIR   1.2 GB    [########]     src/       || Size  : 1.2 GB             |
+|      FILE  42.0 KB   [#.......]     Makefile   || Perms : rwxr-xr-x (0755)   |
+|      LINK   0.0 B    [........]     goinfre    || Link  : /goinfre/...       |
++------------------------------------------------++----------------------------+
+ FINDER  28 items, 11.0 GB used | Marked: 0 | Sort: Size DESC | [F/?] Help
 ```
+
+The runtime interface intentionally uses plain ASCII characters only, so it
+remains readable with minimal fonts, legacy terminals, SSH sessions, and locales
+without Unicode support.
 
 ### 1. ⚡ 16-Thread Asynchronous Scanner
 * Spawns 16 worker threads with strided indexing to scan 65,000+ files in milliseconds without freezing the UI.
@@ -72,9 +73,9 @@ Re-engineered natively in C to execute in $<0.2\text{s}$ with before/after `stat
 * `[u]` **Goinfre Unlinker**: Restores real data back from `/goinfre` to `$HOME` and removes the symlink.
 * `[Z]` **Quota Bypass Injector**: Injects persistent environment exports into `~/.zshrc`.
 
-### 5. 🍏 macOS-Themed NCurses TUI
-* **Traffic Lights & Header**: Styled with `● ● ●` window controls and Finder breadcrumbs.
-* **⌘ Get Info Inspector**: Live display of item permissions (`rwxr-xr-x`), exact bytes, and symlink health.
+### 5. Portable NCurses TUI
+* **Portable Header**: ASCII-only window controls and readable path breadcrumbs.
+* **Get Info Inspector**: Live display of item permissions (`rwxr-xr-x`), exact bytes, and symlink health.
 * **Quick Look (`p`)**: In-terminal scrollable file preview with line numbering and binary detection.
 * **Spotlight Search (`/`)**: Instant real-time substring filtering.
 * **3-Tab Feature Matrix (`f` / `?`)**: Interactive multi-tab command cheatsheet.

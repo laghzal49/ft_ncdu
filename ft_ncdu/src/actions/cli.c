@@ -12,12 +12,25 @@
 
 #include "presets.h"
 
-static void	exec_clean_loop(const char *home, int is_dry_run)
+static int	run_command(char *command)
+{
+	int	status;
+
+	if (!command)
+		return (1);
+	status = system(command);
+	free(command);
+	return (status != 0);
+}
+
+static int	exec_clean_loop(const char *home, int is_dry_run)
 {
 	size_t	i;
 	char	*cmd;
+	int		failed;
 
 	i = 0;
+	failed = 0;
 	while (i < PRESET_COUNT)
 	{
 		if (is_dry_run)
@@ -29,23 +42,25 @@ static void	exec_clean_loop(const char *home, int is_dry_run)
 		else
 		{
 			printf("  -> Cleaning: %s...\n", g_clean_presets[i].title);
-			if (asprintf(&cmd, g_clean_presets[i].command_fmt, home) != -1
-				&& system(cmd))
-				free(cmd);
+			cmd = NULL;
+			if (asprintf(&cmd, g_clean_presets[i].command_fmt, home) == -1
+				|| run_command(cmd))
+				failed = 1;
 		}
 		i++;
 	}
+	return (failed);
 }
 
 static void	print_clean_results(const char *home, int is_dry_run,
 		const char *sz_a)
 {
 	if (is_dry_run)
-		printf("\n\033[1;32m[✔] Dry-run complete. No files wiped.\033[0m\n\n");
+		printf("\n\033[1;32m[x] Dry-run complete. No files wiped.\033[0m\n\n");
 	else
 	{
 		log_audit_action("CLEAN_PURGE", home, "9 tiers purged");
-		printf("\n\033[1;32m[✔] Available Space After: %s\033[0m\n\n", sz_a);
+		printf("\n\033[1;32m[x] Available Space After: %s\033[0m\n\n", sz_a);
 	}
 }
 
@@ -55,22 +70,27 @@ int	run_cli_clean(int is_dry_run)
 	struct statvfs	vfs;
 	char			sz_b[16];
 	char			sz_a[16];
+	int			failed;
 
 	home = getenv("HOME");
 	if (!home)
 		home = ".";
-	statvfs(home, &vfs);
-	format_size((off_t)vfs.f_bfree * vfs.f_frsize, sz_b, sizeof(sz_b));
+	if (statvfs(home, &vfs) == 0)
+		format_size((off_t)vfs.f_bavail * vfs.f_frsize, sz_b, sizeof(sz_b));
+	else
+		safe_str_copy(sz_b, "unknown", sizeof(sz_b));
 	printf("\n\033[1;36m:: [ ntcl13 / 1337 & 42 Fast Cleaner ] ::\033[0m\n");
 	if (is_dry_run)
 		printf("\033[1;35m[*] DRY-RUN: Simulating cleanup...\033[0m\n\n");
 	else
 		printf("\033[1;33m[*] Free Space Before: %s\033[0m\n\n", sz_b);
-	exec_clean_loop(home, is_dry_run);
-	statvfs(home, &vfs);
-	format_size((off_t)vfs.f_bfree * vfs.f_frsize, sz_a, sizeof(sz_a));
+	failed = exec_clean_loop(home, is_dry_run);
+	if (statvfs(home, &vfs) == 0)
+		format_size((off_t)vfs.f_bavail * vfs.f_frsize, sz_a, sizeof(sz_a));
+	else
+		safe_str_copy(sz_a, "unknown", sizeof(sz_a));
 	print_clean_results(home, is_dry_run, sz_a);
-	return (0);
+	return (failed);
 }
 
 int	run_cli_heal(void)
@@ -84,13 +104,18 @@ int	run_cli_heal(void)
 		return (1);
 	printf("\033[1;36m[ft_ncdu]\033[0m Repairing broken goinfre links...\n");
 	esc = shell_escape(home);
-	if (esc && asprintf(&cmd,
+	cmd = NULL;
+	if (!esc || asprintf(&cmd,
 			"find %s -maxdepth 4 -type l -exec sh -c 'for l; do "
 			"t=$(readlink \"$l\"); case \"$t\" in /goinfre/*|/sgoinfre/*"
 			"|/tmp/goinfre_*) [ ! -e \"$l\" ] && mkdir -p \"$t\" && "
 			"echo \"  Healed: $l\";; esac; done' sh {} + 2>/dev/null",
-			esc) != -1 && system(cmd))
-		free(cmd);
+			esc) == -1 || run_command(cmd))
+	{
+		free(esc);
+		fprintf(stderr, "ft_ncdu: unable to heal symlinks\n");
+		return (1);
+	}
 	free(esc);
 	log_audit_action("HEAL_LINKS", home, "Station symlinks repaired");
 	printf("\033[1;32m[ft_ncdu]\033[0m All goinfre targets restored.\n");
@@ -103,6 +128,7 @@ int	run_cli_bootstrap(void)
 	const char	*home;
 	char		*cmd;
 	size_t		i;
+	int			failed;
 
 	get_goinfre_path(bg, sizeof(bg));
 	home = getenv("HOME");
@@ -110,17 +136,19 @@ int	run_cli_bootstrap(void)
 		return (1);
 	printf("\033[1;36m[ft_ncdu]\033[0m Bootstrapping tools to %s...\n", bg);
 	i = 0;
+	failed = 0;
 	while (g_bootstrap_targets[i] != NULL)
 	{
+		cmd = NULL;
 		if (asprintf(&cmd, "mkdir -p $(dirname %s/%s) && mv %s/%s %s/%s && "
 				"ln -s %s/%s %s/%s 2>/dev/null", bg, g_bootstrap_targets[i],
 				home, g_bootstrap_targets[i], bg, g_bootstrap_targets[i],
-				bg, g_bootstrap_targets[i], home, g_bootstrap_targets[i]) != -1
-			&& system(cmd))
-			free(cmd);
+				bg, g_bootstrap_targets[i], home, g_bootstrap_targets[i]) == -1
+			|| run_command(cmd))
+			failed = 1;
 		i++;
 	}
 	log_audit_action("BOOTSTRAP_GOINFRE", bg, "Toolchain caches relocated");
 	printf("\033[1;32m[ft_ncdu]\033[0m Bootstrap complete!\n");
-	return (0);
+	return (failed);
 }

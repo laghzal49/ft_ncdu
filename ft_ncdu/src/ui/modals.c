@@ -16,17 +16,21 @@ int	confirm_modal(const char *title, const char *message)
 {
 	WINDOW	*win;
 	int		key_code;
+	int		width;
 
-	win = newwin(8, 68, (LINES - 8) / 2, (COLS - 68) / 2);
+	width = COLS - 2;
+	if (width > 68)
+		width = 68;
+	win = newwin(8, width, (LINES - 8) / 2, (COLS - width) / 2);
 	if (!win)
 		return (0);
 	box(win, 0, 0);
 	wattron(win, COLOR_PAIR(4) | A_BOLD);
-	mvwprintw(win, 1, 2, ":: [  %s ] ::", title);
+	mvwprintw(win, 1, 2, ":: [ %s ] ::", title);
 	wattroff(win, COLOR_PAIR(4) | A_BOLD);
-	mvwprintw(win, 3, 2, " %.*s", 64, message);
+	mvwprintw(win, 3, 2, " %.*s", width - 5, message);
 	wattron(win, COLOR_PAIR(2) | A_BOLD);
-	mvwprintw(win, 5, 2, " [Y] Confirm  │  [N] / [ESC] Cancel");
+	mvwprintw(win, 5, 2, " [Y] Confirm  |  [N] / [ESC] Cancel");
 	wattroff(win, COLOR_PAIR(2) | A_BOLD);
 	wrefresh(win);
 	wtimeout(win, -1);
@@ -38,7 +42,7 @@ int	confirm_modal(const char *title, const char *message)
 static void	render_page1_nav(WINDOW *win)
 {
 	wattron(win, COLOR_PAIR(3) | A_BOLD);
-	mvwprintw(win, 2, 2, " 🧭 FINDER NAVIGATION & SEARCH (TAB 1/3)");
+	mvwprintw(win, 2, 2, " FINDER NAVIGATION & SEARCH (TAB 1/3)");
 	wattroff(win, COLOR_PAIR(3) | A_BOLD);
 	mvwprintw(win, 4, 4, "j / k / Arrows   : Navigate Rows");
 	mvwprintw(win, 5, 4, "g / G / Home/End : Jump to Top / Bottom");
@@ -53,7 +57,7 @@ static void	render_page1_nav(WINDOW *win)
 static void	render_page2_cluster(WINDOW *win)
 {
 	wattron(win, COLOR_PAIR(3) | A_BOLD);
-	mvwprintw(win, 2, 2, " ⚡ 42 CLUSTER & GOINFRE HEALER (TAB 2/3)");
+	mvwprintw(win, 2, 2, " 42 CLUSTER & GOINFRE HEALER (TAB 2/3)");
 	wattroff(win, COLOR_PAIR(3) | A_BOLD);
 	mvwprintw(win, 4, 4, "s                : Move to Goinfre & Link");
 	mvwprintw(win, 5, 4, "u                : Restore to HOME");
@@ -66,6 +70,9 @@ static void	render_page2_cluster(WINDOW *win)
 
 static void	render_page_content(WINDOW *win, int page_idx)
 {
+	int	height;
+
+	height = getmaxy(win);
 	werase(win);
 	box(win, 0, 0);
 	if (page_idx == 0)
@@ -75,7 +82,7 @@ static void	render_page_content(WINDOW *win, int page_idx)
 	else
 	{
 		wattron(win, COLOR_PAIR(3) | A_BOLD);
-		mvwprintw(win, 2, 2, " 🛠️ TOOLS & CLI MODES (TAB 3/3)");
+		mvwprintw(win, 2, 2, " TOOLS & CLI MODES (TAB 3/3)");
 		wattroff(win, COLOR_PAIR(3) | A_BOLD);
 		mvwprintw(win, 4, 4, "p                : Quick Look File Preview");
 		mvwprintw(win, 5, 4, "e / t / !        : $EDITOR / Subshell / Exec");
@@ -86,7 +93,8 @@ static void	render_page_content(WINDOW *win, int page_idx)
 		mvwprintw(win, 11, 4, "CLI: ft_ncdu --report : Print Quota Summary");
 	}
 	wattron(win, COLOR_PAIR(2) | A_BOLD);
-	mvwprintw(win, 13, 2, " [Tab / Arrows] Next Tab │ [ESC] Close");
+	mvwprintw(win, height - 2, 2,
+		" [Tab / Arrows] Next Tab | [ESC] Close");
 	wattroff(win, COLOR_PAIR(2) | A_BOLD);
 	wrefresh(win);
 }
@@ -96,8 +104,17 @@ void	show_help_modal(void)
 	WINDOW	*win;
 	int		page_idx;
 	int		key_code;
+	int		height;
+	int		width;
 
-	win = newwin(16, 70, (LINES - 16) / 2, (COLS - 70) / 2);
+	height = LINES - 2;
+	if (height > 16)
+		height = 16;
+	width = COLS - 2;
+	if (width > 70)
+		width = 70;
+	win = newwin(height, width, (LINES - height) / 2,
+			(COLS - width) / 2);
 	if (!win)
 		return ;
 	page_idx = 0;

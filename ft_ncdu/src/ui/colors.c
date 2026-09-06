@@ -38,23 +38,23 @@ static void	draw_box_borders(t_rect r)
 {
 	int	i;
 
-	mvaddstr(r.y, r.x, "╭");
+	mvaddstr(r.y, r.x, "+");
 	i = 1;
 	while (i < r.w - 1)
-		mvaddstr(r.y, r.x + i++, "─");
-	mvaddstr(r.y, r.x + r.w - 1, "╮");
+		mvaddstr(r.y, r.x + i++, "-");
+	mvaddstr(r.y, r.x + r.w - 1, "+");
 	i = 1;
 	while (i < r.h - 1)
 	{
-		mvaddstr(r.y + i, r.x, "│");
-		mvaddstr(r.y + i, r.x + r.w - 1, "│");
+		mvaddstr(r.y + i, r.x, "|");
+		mvaddstr(r.y + i, r.x + r.w - 1, "|");
 		i++;
 	}
-	mvaddstr(r.y + r.h - 1, r.x, "╰");
+	mvaddstr(r.y + r.h - 1, r.x, "+");
 	i = 1;
 	while (i < r.w - 1)
-		mvaddstr(r.y + r.h - 1, r.x + i++, "─");
-	mvaddstr(r.y + r.h - 1, r.x + r.w - 1, "╯");
+		mvaddstr(r.y + r.h - 1, r.x + i++, "-");
+	mvaddstr(r.y + r.h - 1, r.x + r.w - 1, "+");
 }
 
 void	draw_box(t_rect r, const char *title, int color)
@@ -70,11 +70,11 @@ void	draw_box(t_rect r, const char *title, int color)
 		tlen = strlen(title);
 		if (tlen + 4 < r.w)
 		{
-			mvaddstr(r.y, r.x + 1, "┤");
+			mvaddstr(r.y, r.x + 1, "[");
 			attron(A_BOLD);
-			mvprintw(r.y, r.x + 2, " %s ", title);
+			mvprintw(r.y, r.x + 2, "%s", title);
 			wattroff(stdscr, A_BOLD);
-			mvaddstr(r.y, r.x + tlen + 4, "├");
+			mvaddstr(r.y, r.x + tlen + 2, "]");
 		}
 	}
 	attroff(COLOR_PAIR(color));

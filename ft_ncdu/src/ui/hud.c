@@ -70,7 +70,7 @@ static void	render_home_card(t_rect rect, double home_percent)
 	int		color_pair;
 	int		gauge_width;
 
-	draw_box(rect, "💾 HOME QUOTA", 1);
+	draw_box(rect, "HOME QUOTA", 1);
 	gauge_width = 6;
 	if (rect.w > 32)
 		gauge_width = 10;
@@ -91,7 +91,7 @@ static void	render_goinfre_card(t_rect rect, int has_goinfre,
 	char	free_size_str[16];
 	char	gauge_text[64];
 
-	draw_box(rect, "⚡ GOINFRE NVMe", 6);
+	draw_box(rect, "GOINFRE NVMe", 6);
 	if (has_goinfre)
 	{
 		format_size(free_bytes, free_size_str, sizeof(free_size_str));
@@ -116,24 +116,45 @@ void	render_top_hud(int max_x)
 	int				card_width;
 	t_rect			rect;
 	double			home_percent;
+	int				has_home_stats;
+	int				has_goinfre;
+	off_t			goinfre_free;
 
 	card_width = (max_x - 4) / 3;
 	if (card_width < 20)
 		card_width = 20;
-	statvfs(g_state.current_dir, &fs_stats);
+	memset(&fs_stats, 0, sizeof(fs_stats));
+	memset(&goinfre_stats, 0, sizeof(goinfre_stats));
+	has_home_stats = (statvfs(g_state.current_dir, &fs_stats) == 0);
 	home_percent = 0.0;
-	if (fs_stats.f_blocks > 0)
-		home_percent = (double)(fs_stats.f_blocks - fs_stats.f_bfree)
+	if (has_home_stats && fs_stats.f_blocks > 0)
+		home_percent = (double)(fs_stats.f_blocks - fs_stats.f_bavail)
 			/ fs_stats.f_blocks * 100.0;
+	if (max_x < 72)
+	{
+		rect = (t_rect){1, 0, 3, max_x};
+		draw_box(rect, "STORAGE OVERVIEW", 1);
+		attron(COLOR_PAIR(home_percent > 85.0 ? 4 : 2) | A_BOLD);
+		mvprintw(2, 2, "Home %5.1f%% used  |  %s", home_percent,
+			g_state.is_scanning ? "Scanning..." : "Ready");
+		attroff(COLOR_PAIR(home_percent > 85.0 ? 4 : 2) | A_BOLD);
+		return ;
+	}
 	rect = (t_rect){1, 0, 3, card_width + 1};
 	render_home_card(rect, home_percent);
 	rect = (t_rect){1, card_width + 1, 3, card_width + 1};
-	draw_box(rect, "📊 INODES", 2);
+	draw_box(rect, "INODES", 2);
 	attron(COLOR_PAIR(2) | A_BOLD);
-	mvprintw(2, card_width + 3, "%llu Inodes Used",
-		(unsigned long long)(fs_stats.f_files - fs_stats.f_ffree));
+	if (has_home_stats)
+		mvprintw(2, card_width + 3, "%llu Inodes Used",
+			(unsigned long long)(fs_stats.f_files - fs_stats.f_ffree));
+	else
+		mvprintw(2, card_width + 3, "Storage unavailable");
 	wattroff(stdscr, COLOR_PAIR(2) | A_BOLD);
 	rect = (t_rect){1, (card_width + 1) * 2, 3, max_x - (card_width + 1) * 2};
-	render_goinfre_card(rect, statvfs("/goinfre", &goinfre_stats) == 0, 0.0,
-		(off_t)goinfre_stats.f_bfree * goinfre_stats.f_frsize);
+	has_goinfre = (statvfs("/goinfre", &goinfre_stats) == 0);
+	goinfre_free = 0;
+	if (has_goinfre)
+		goinfre_free = (off_t)goinfre_stats.f_bavail * goinfre_stats.f_frsize;
+	render_goinfre_card(rect, has_goinfre, 0.0, goinfre_free);
 }
