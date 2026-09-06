@@ -29,6 +29,7 @@
 # include <signal.h>
 # include <time.h>
 # include <ctype.h>
+# include <errno.h>
 
 # include "config.h"
 
@@ -122,6 +123,7 @@ typedef struct s_rect
 }	t_rect;
 
 extern t_app_state	g_state;
+extern volatile sig_atomic_t	g_exit_requested;
 
 /* Core Scanner & Workers */
 void	start_async_scan(const char *dir_path);

@@ -45,6 +45,14 @@ static void	render_row_active(int row_y, t_file_entry *entry, int split_x,
 	char		bar_graph[32];
 	int			name_width;
 
+	if (split_x < 52)
+	{
+		attron(COLOR_PAIR(5) | A_BOLD);
+		mvprintw(row_y, 1, " ❯ %s %s %-*.*s", entry->marked ? "✔" : " ",
+			size_str, split_x - 20, split_x - 20, entry->name);
+		attroff(COLOR_PAIR(5) | A_BOLD);
+		return ;
+	}
 	name_width = split_x - 36;
 	if (name_width < 4)
 		name_width = 4;
@@ -72,6 +80,12 @@ static void	render_row_inactive(int row_y, t_file_entry *entry, int split_x,
 	char		bar_graph[32];
 	int			name_width;
 
+	if (split_x < 52)
+	{
+		mvprintw(row_y, 1, "   %s %s %-*.*s", entry->marked ? "✔" : " ",
+			size_str, split_x - 20, split_x - 20, entry->name);
+		return ;
+	}
 	name_width = split_x - 36;
 	if (name_width < 4)
 		name_width = 4;
@@ -101,7 +115,10 @@ void	render_file_table(t_rect rect, int split_x)
 
 	draw_box(rect, " FINDER EXPLORER", 1);
 	attron(COLOR_PAIR(14) | A_BOLD);
-	mvprintw(rect.y + 1, 2, "ST  TYPE     SIZE     ALLOCATION %%       NAME");
+	if (split_x < 52)
+		mvprintw(rect.y + 1, 2, "ST    SIZE       NAME");
+	else
+		mvprintw(rect.y + 1, 2, "ST  TYPE     SIZE     ALLOCATION %%       NAME");
 	wattroff(stdscr, COLOR_PAIR(14) | A_BOLD);
 	pthread_mutex_lock(&g_state.lock);
 	row_idx = 0;

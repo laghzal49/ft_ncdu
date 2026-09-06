@@ -13,15 +13,12 @@
 #include "ft_ncdu.h"
 
 t_app_state	g_state;
+volatile sig_atomic_t	g_exit_requested;
 
 static void	handle_signal(int sig)
 {
 	(void)sig;
-	g_state.abort_scan = 1;
-	endwin();
-	free_state_memory();
-	pthread_mutex_destroy(&g_state.lock);
-	exit(0);
+	g_exit_requested = 1;
 }
 
 static int	parse_action_flags(int argc, char **argv)
@@ -100,18 +97,33 @@ int	main(int argc, char **argv)
 {
 	char		start_path[PATH_MAX_LEN];
 	const char	*home;
+	int			cli_status;
+	int			path_error;
 
-	if (parse_cli_flags(argc, argv) > 0)
-		return (0);
+	cli_status = parse_cli_flags(argc, argv);
+	if (cli_status > 0)
+		return (cli_status - 1);
 	init_runtime();
 	home = getenv("HOME");
 	if (!home)
 		home = ".";
 	safe_str_copy(start_path, home, PATH_MAX_LEN);
-	if (argc > 1 && argv[1][0] != '-')
-		realpath(argv[1], start_path);
+	if (argc > 1 && argv[1][0] != '-'
+		&& realpath(argv[1], start_path) == NULL)
+	{
+		path_error = errno;
+		endwin();
+		fprintf(stderr, "%s: cannot open '%s': %s\n", APP_NAME, argv[1],
+			strerror(path_error));
+		free_state_memory();
+		pthread_mutex_destroy(&g_state.lock);
+		return (1);
+	}
 	start_async_scan(start_path);
 	run_event_loop();
+	g_state.abort_scan = 1;
+	while (g_state.is_scanning)
+		usleep(1000);
 	endwin();
 	free_state_memory();
 	pthread_mutex_destroy(&g_state.lock);

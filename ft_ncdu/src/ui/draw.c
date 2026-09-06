@@ -106,11 +106,16 @@ void	draw_ui(void)
 	render_header_bar(max_x);
 	render_top_hud(max_x);
 	split_x = (max_x * 58) / 100;
+	if (max_x < 88)
+		split_x = max_x;
 	body_height = max_y - 6;
 	rect = (t_rect){4, 0, body_height, split_x};
 	render_file_table(rect, split_x);
-	rect = (t_rect){4, split_x, body_height, max_x - split_x};
-	render_inspector(rect, split_x);
+	if (split_x < max_x)
+	{
+		rect = (t_rect){4, split_x, body_height, max_x - split_x};
+		render_inspector(rect, split_x);
+	}
 	render_status_footer(max_y, max_x);
 	refresh();
 }
