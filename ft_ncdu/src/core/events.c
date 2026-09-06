@@ -62,7 +62,7 @@ void	run_event_loop(void)
 	int	ch;
 	int	max_y;
 
-	while (1)
+	while (!g_exit_requested)
 	{
 		draw_ui();
 		ch = getch();
