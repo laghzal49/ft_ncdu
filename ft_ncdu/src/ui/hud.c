@@ -29,9 +29,9 @@ void	render_gauge(char *buffer, double percentage, int width)
 	buffer[0] = '[';
 	i = 0;
 	while (i < filled_blocks)
-		buffer[1 + i++] = '#';
+		buffer[1 + i++] = '=';
 	while (i < width)
-		buffer[1 + i++] = '.';
+		buffer[1 + i++] = ' ';
 	buffer[1 + width] = ']';
 	buffer[2 + width] = ' ';
 	snprintf(buffer + 3 + width, 16, "%5.1f%%", percentage);
@@ -57,9 +57,9 @@ void	render_graph_bar(char *buffer, off_t item_size, off_t max_size,
 	buffer[0] = '[';
 	i = 0;
 	while (i < filled_blocks)
-		buffer[1 + i++] = '#';
+		buffer[1 + i++] = '|';
 	while (i < bar_width)
-		buffer[1 + i++] = '.';
+		buffer[1 + i++] = '-';
 	buffer[1 + bar_width] = ']';
 	buffer[2 + bar_width] = '\0';
 }
@@ -90,9 +90,9 @@ void	render_top_hud(int max_x)
 	format_size((off_t)fs_stats.f_bavail * fs_stats.f_frsize,
 		free_space, sizeof(free_space));
 	render_gauge(gauge, home_percent, max_x >= 72 ? 12 : 6);
-	attron(COLOR_PAIR(home_percent > 85.0 ? 4 : 2) | A_BOLD);
+	attron(COLOR_PAIR(home_percent > 85.0 ? 4 : (home_percent > 60.0 ? 3 : 2)) | A_BOLD);
 	mvprintw(1, 1, "Disk %s", gauge);
-	attroff(COLOR_PAIR(home_percent > 85.0 ? 4 : 2) | A_BOLD);
+	attroff(COLOR_PAIR(home_percent > 85.0 ? 4 : (home_percent > 60.0 ? 3 : 2)) | A_BOLD);
 	if (max_x >= 52)
 		printw("  %s used  %s free", used, free_space);
 	if (max_x >= 86)

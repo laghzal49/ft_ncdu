@@ -26,11 +26,11 @@ int	confirm_modal(const char *title, const char *message)
 		return (0);
 	box(win, 0, 0);
 	wattron(win, COLOR_PAIR(4) | A_BOLD);
-	mvwprintw(win, 1, 2, ":: [ %s ] ::", title);
+	mvwprintw(win, 1, 2, "  [ %s ]", title);
 	wattroff(win, COLOR_PAIR(4) | A_BOLD);
 	mvwprintw(win, 3, 2, " %.*s", width - 5, message);
 	wattron(win, COLOR_PAIR(2) | A_BOLD);
-	mvwprintw(win, 5, 2, " [Y] Confirm  |  [N] / [ESC] Cancel");
+	mvwprintw(win, 5, 2, "  [Y] Confirm     [N] Cancel");
 	wattroff(win, COLOR_PAIR(2) | A_BOLD);
 	wrefresh(win);
 	wtimeout(win, -1);

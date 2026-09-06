@@ -110,7 +110,7 @@ void	action_edit(void)
 		return ;
 	editor_name = getenv("EDITOR");
 	if (!editor_name)
-		editor_name = "nvim";
+		editor_name = "vi";
 	escaped_path = shell_escape(g_state.filtered[g_state.selected].path);
 	if (escaped_path && asprintf(&command_str, "%s %s", editor_name,
 			escaped_path) != -1)
@@ -133,7 +133,7 @@ void	action_shell(void)
 
 	shell_name = getenv("SHELL");
 	if (!shell_name)
-		shell_name = "/bin/zsh";
+		shell_name = "/bin/sh";
 	def_prog_mode();
 	endwin();
 	printf("\n\033[1;36m[ft_ncdu]\033[0m Subshell at %s\n",

@@ -1,171 +1,258 @@
-#  ft_ncdu & clean42 / ntcl13
-### *The Ultimate High-Performance macOS-Themed Cluster Storage Suite for 1337 & 42 Network*
+# ft_ncdu & clean42 / ntcl13
+### The Ultimate High-Performance Cluster Storage Suite for 1337 & 42 Network
 
-[![Norminette](https://img.shields.io/badge/Norminette-100%25%20Passing-brightgreen.svg)](https://github.com/42School/norminette)
-[![Language](https://img.shields.io/badge/Language-C99%20%7C%20POSIX-blue.svg)](https://en.wikipedia.org/wiki/C_(programming_language))
-[![Platform](https://img.shields.io/badge/Platform-macOS%20(Darwin)%20%7C%20Linux-orange.svg)](#)
-[![Threads](https://img.shields.io/badge/Concurrency-16%20Threads-blueviolet.svg)](#)
-[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+![Norminette](https://img.shields.io/badge/Norminette-Passing-success)
+![Language](https://img.shields.io/badge/Language-C99%20%7C%20POSIX%20%7C%20Python-blue)
+![Platform](https://img.shields.io/badge/Platform-macOS%20%7C%20Linux-lightgrey)
+![Threads](https://img.shields.io/badge/Threads-16-orange)
+![License](https://img.shields.io/badge/License-MIT-green)
 
-A blazing-fast, native C terminal disk usage analyzer, automated cluster quota optimizer, and workstation healer designed specifically for **1337 Coding School** and **42 Network** students across **macOS (iMacs / Apple Silicon)** and **Linux**.
+`ft_ncdu` (and its aliases `clean42` / `ntcl13`) is an ultra-fast, robust, and feature-rich cluster storage management suite specifically engineered for the 42 Network and 1337 Coding School environments. Born out of the necessity to manage limited NFS quotas, it empowers students to instantly analyze disk usage, effortlessly purge gigabytes of cached junk across 9 intelligent tiers, and seamlessly migrate massive directories to local `/goinfre` storage while keeping configurations intact.
 
 ---
 
-## ⚡ 1-Line Quick Install
+## ⚡ Quick Install
 
-Run this single command in your terminal on any 42 workstation:
+Get up and running instantly with our one-liner curl installation script:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/laghzal49/ft_ncdu/main/install.sh | bash
 ```
 
-The installer asks whether to install the terminal UI, the Python Tk desktop
-GUI, or both. It detects macOS/Linux, installs supported system dependencies,
-builds when needed, installs to `~/.local/bin/`, and configures `$PATH`.
-For automation, set `FT_NCDU_MODE=tui`, `gui`, or `both`.
+The interactive installer will prompt you to choose which components to install (TUI, GUI, or both). For automated headless deployments, you can set the `FT_NCDU_MODE` environment variable (e.g., `export FT_NCDU_MODE=both`). 
+
+The installation process compiles the C core natively, deploys the Python GUI securely, and installs all binaries and aliases directly into your `~/.local/bin/` directory.
 
 ---
 
-## 🚀 Key Highlights & Capabilities
+## 🖥️ Three Interfaces, One Suite
+
+### Terminal UI (TUI)
+- **Native C ncurses interface** for blazing-fast, lightweight operation over SSH or local terminal.
+- **16-thread async scanning** maps your entire home directory in milliseconds.
+- **Key features:** Deep navigation, dynamic sorting, live search, advanced inspector panel, and a real-time storage gauge.
 
 ```text
- o o o   1337 | 42  ft_ncdu v2.0.0  /home/student/Projects/ft_ncdu
-+[HOME QUOTA]--------------++[INODES]---------------++[GOINFRE NVMe]----------+
-| [########....]  52.4%     || 14,290 Inodes Used    || 148.2 GB Free          |
-+---------------------------++-----------------------++------------------------+
-+[FINDER EXPLORER]------------------------------++[GET INFO]------------------+
-| ST  TYPE     SIZE     ALLOCATION %   NAME      || Name  : minishell          |
-|  >   DIR   1.2 GB    [########]     src/       || Size  : 1.2 GB             |
-|      FILE  42.0 KB   [#.......]     Makefile   || Perms : rwxr-xr-x (0755)   |
-|      LINK   0.0 B    [........]     goinfre    || Link  : /goinfre/...       |
-+------------------------------------------------++----------------------------+
- FINDER  28 items, 11.0 GB used | Marked: 0 | Sort: Size DESC | [F/?] Help
+┌─ ft_ncdu ───────────────────────────────────────────────┐
+│ /home/user/1337-space                       [ 45.2 GB ] │
+├─────────────────────────────────────────────────────────┤
+│   12.4 GB [##########          ] /docker-volumes        │
+│    8.2 GB [######              ] /.cache                │
+│    5.1 GB [####                ] /projects              │
+│    2.0 GB [#                   ] /node_modules          │
+└─────────────────────────────────────────────────────────┘
 ```
 
-The runtime interface intentionally uses plain ASCII characters only, so it
-remains readable with minimal fonts, legacy terminals, SSH sessions, and locales
-without Unicode support.
+### Desktop GUI (Python/Tk)
+- **Modern dark-themed Tkinter application** providing a rich desktop experience.
+- **Full feature parity with TUI (NEW!)** ensuring you never miss out on functionality.
+- **Features:** Intuitive menu bar, persistent inspector panel, one-click cleaning presets, visual goinfre management, bootstrap wizard, station healer, inline file preview, report export, and batch operations.
+- Run with: `ft_ncdu-gui` or `python3 scripts/ft_ncdu_gui.py`
 
-### 1. ⚡ 16-Thread Asynchronous Scanner
-* Spawns 16 worker threads with strided indexing to scan 65,000+ files in milliseconds without freezing the UI.
-* Built-in **POSIX `st_dev` mount boundary shielding** prevents the crawler from traversing into `/proc`, `/sys`, or external network drives.
-
-### 2. 🧹 9-Tier Native C Fast Cleaner (`clean42` / `ntcl13`)
-Re-engineered natively in C to execute in $<0.2\text{s}$ with before/after `statvfs()` disk space reporting:
-* **Tier 1**: C/C++ build artifacts (`*.o`, `*.a`, `*.so`, `*.dSYM`, `core.*`, `vgcore.*`).
-* **Tier 2**: Francinette & Unit Testers (`~/francinette/temp`, `.francinette/logs`, `valgrind*.log`, `*.gcda`).
-* **Tier 3**: AI & PyTorch models (`~/.cache/huggingface`, `~/.cache/torch`, `~/.cache/pip`, `__pycache__`).
-* **Tier 4**: Node.js & Web (`node_modules`, `~/.npm`, `~/.yarn/cache`, `.next`, `.turbo`).
-* **Tier 5**: Browser & Electron caches (Chrome, Chromium, Brave, Firefox, VS Code, Discord, Slack).
-* **Tier 6**: Docker & Containers (`docker system prune -a --volumes -f`).
-* **Tier 7**: Norminette logs & temp state (`~/.norminette/logs`, `/tmp/*_${USER}`).
-* **Tier 8**: Desktop Trash & Thumbnails (`~/.local/share/Trash`, `~/.Trash`).
-* **Tier 9**: Nuclear 1337 Wipe (One-shot deep purge across all cache tiers).
-
-### 3. 🛡️ Safe Dry-Run Simulation & Audit Trail
-* **Dry-Run Mode (`-n` / `--dry-run`)**: Preview what caches would be removed without modifying or deleting any files:
-  ```bash
-  clean42 --dry-run
-  ```
-* **Audit Trail (`~/.ft_ncdu_cleanup.log`)**: Automatically logs every purge, deletion, and healing action with exact timestamps and target paths.
-
-### 4. 🩹 Station-Hopping Healer (`H`) & Living Manifest
-* **How it works**: Since `$HOME` is stored on NFS network storage and follows you to every physical workstation, **the symlinks in `$HOME` act as the living manifest**.
-* When changing workstations, press **`H`** (or run `clean42 --heal`). It uses `readlink()` to inspect all symlinks pointing to `/goinfre/$USER/*` and automatically `mkdir -p`s the missing folder paths on the new machine so VS Code, Docker, and Francinette never crash.
-* `[s]` **Goinfre Symlinker**: Moves target project to `/goinfre/$USER/` and creates a symlink in `$HOME` (uses 0 KB of your strict quota).
-* `[u]` **Goinfre Unlinker**: Restores real data back from `/goinfre` to `$HOME` and removes the symlink.
-* `[Z]` **Quota Bypass Injector**: Injects persistent environment exports into `~/.zshrc`.
-
-### 5. Portable NCurses TUI
-* **Portable Header**: ASCII-only window controls and readable path breadcrumbs.
-* **Get Info Inspector**: Live display of item permissions (`rwxr-xr-x`), exact bytes, and symlink health.
-* **Quick Look (`p`)**: In-terminal scrollable file preview with line numbering and binary detection.
-* **Spotlight Search (`/`)**: Instant real-time substring filtering.
-* **3-Tab Feature Matrix (`f` / `?`)**: Interactive multi-tab command cheatsheet.
-
-### 6. Python Tk Desktop GUI
-* Background scanning keeps navigation responsive while directory sizes load.
-* Native scrollbar, sortable columns, search, folder picker, and hidden files.
-* Read-only browsing avoids accidental deletion while inspecting large trees.
-* Install `GUI` or `Both`, then run `ft_ncdu` or `ft_ncdu-gui` respectively.
+### Headless CLI
+- **Zero-UI batch operations** for rapid cleanup directly from your shell prompt.
+- **Commands:** `clean42`, `ntcl13`, `ft_ncdu -c`, `--heal`, `--bootstrap`, `--report`
+- **Dry-run mode:** Test the waters safely with `--dry-run` or `-n`.
 
 ---
 
-## 🎮 Keyboard Shortcuts Reference
+## 🚀 Feature Matrix
+
+| Feature | TUI | GUI | CLI |
+|---------|-----|-----|-----|
+| 16-Thread Async Scanner | ✅ | ✅ | — |
+| 9-Tier Cleaning Presets | ✅ | ✅ | ✅ |
+| Goinfre Symlink/Restore | ✅ | ✅ | — |
+| Bootstrap to Goinfre | ✅ | ✅ | ✅ |
+| Station Healer | ✅ | ✅ | ✅ |
+| File Preview | ✅ | ✅ | — |
+| Report Export | ✅ | ✅ | ✅ |
+| Batch Mark/Delete | ✅ | ✅ | — |
+| Inspector Panel | ✅ | ✅ | — |
+| Storage Gauge | ✅ | ✅ | — |
+| Protected Path Guards | ✅ | ✅ | — |
+| Audit Trail Logging | ✅ | ✅ | ✅ |
+| Dry-Run Mode | — | — | ✅ |
+| Search/Filter | ✅ | ✅ | — |
+
+---
+
+## 🧹 9-Tier Native Cleaner
+
+Free up gigabytes safely with specialized cleaning tiers tailored for developers:
+
+1. **42 C/C++ Dev Output** (`*.o`, `*.a`, `*.dSYM`, `vgcore.*`, `clangd`) - Purge compiled objects and debugging symbols.
+2. **Francinette & Testers** (`francinette/temp`, `logs`, `gcda/gcno`) - Clear out heavy automated tester remnants.
+3. **AI & Python ML Caches** (`__pycache__`, `huggingface`, `torch`, `pip`, `ollama`) - Reclaim space from massive AI models and pip caches.
+4. **Web & Transcendence** (`node_modules`, `npm`, `yarn`, `.next`, `.turbo`) - Wipe out endless JS dependency trees.
+5. **Browser & Electron** (`Chrome`, `Chromium`, `Brave`, `Firefox`, `VSCode`, `Discord`, `Slack`) - Safely flush cache from hungry GUI apps.
+6. **Docker Cluster Prune** (`docker system prune -a --volumes -f`) - Annihilate unused containers, images, and volumes.
+7. **Norminette & Shell Logs** (`norminette cache`, `zcompdump`, `xsession-errors`) - Clean up system and linter debris.
+8. **Desktop Trash Bin** (`Trash`, `.Trash`) - Empty your OS recycle bin.
+9. **Nuclear 1337 Wipe** - The ultimate purge. Executes all tiers simultaneously for maximum quota recovery.
+
+---
+
+## 🩹 Station-Hopping Healer & Goinfre
+
+Embrace the **living manifest paradigm**. In cluster environments, your NFS home follows you, but `/goinfre` is strictly local to the machine.
+
+- **The Manifest:** Symlinks in your `$HOME` act as a manifest of relocated tools (e.g., Docker, Code, Caches).
+- **Healer (`H` key or `--heal`):** Instantly repairs broken `/goinfre` symlinks when you log into a new workstation by recreating the destination structures locally.
+- **Bootstrap (`b` key or `--bootstrap`):** Intelligently relocates standard heavy directories (like `~/.cache`, `~/.docker`, `~/.vscode-server`) to `/goinfre` and sets up the symlinks automatically.
+- **ZSH Integration:** Automatically injects necessary `export` overrides into your `.zshrc` to ensure tools respect the new `/goinfre` paths.
+
+---
+
+## 🛡️ Safety & Security
+
+- **Protected Path Guards:** Hardcoded safeguards prevent accidental deletion of critical system directories (`/`, `/home`, `/tmp`, etc.).
+- **Shell Argument Escaping:** Robust sanitization of filenames before they hit any system call.
+- **Audit Trail Logging:** Every deletion and migration is logged to `~/.ft_ncdu_cleanup.log` for transparency.
+- **Cross-Filesystem Mount Boundary Protection:** POSIX `st_dev` checks ensure recursive operations don't bleed into external mounts (like USBs or other NFS shares).
+- **Dry-Run Mode:** See exactly what *would* be deleted before committing.
+- **Ownership Validation:** Strict permission checks during the bootstrap process ensure structural integrity.
+
+---
+
+## 🎮 Keyboard Shortcuts (TUI)
 
 | Key | Action | Description |
-| :--- | :--- | :--- |
-| `f` / `?` | **Feature Matrix** | Open interactive 3-tab Command & Feature cheatsheet |
-| `j` / `k` / `↑` `↓` | **Navigate** | Move cursor up / down |
-| `g` / `G` | **Jump** | Jump to top / bottom of list |
-| `PgUp` / `PgDn` | **Scroll** | Fast multi-row viewport scroll |
-| `l` / `Enter` / `h` | **Traversal** | Open highlighted folder / Step out to parent directory |
-| `~` / `P` / `:` | **Teleport** | Jump directly to `$HOME` or enter custom path |
-| `/` | **Spotlight** | Real-time substring filter (`ESC` clears) |
-| `o` | **Sort Cycle** | Cycle: Size (Desc) $\to$ Size (Asc) $\to$ Name (A-Z) $\to$ Date |
-| `p` | **Quick Look** | macOS Quick Look in-terminal file preview |
-| `s` / `u` | **Goinfre** | Move to `/goinfre` & symlink / Restore back to `$HOME` |
-| `H` | **Healer** | Repair broken `/goinfre` symlinks on workstation switch |
-| `C` / `K` | **Cleaners** | Open 9-Tier Cleaning Presets Menu / One-Shot Junk Nuke |
-| `T` / `Z` | **Storage** | Purge Desktop Trash / Inject Quota Bypass in `~/.zshrc` |
-| `e` / `t` / `!` | **Tools** | Open `$EDITOR` / Interactive Subshell / Exec bash command |
-| `Space` / `v` / `U` | **Batch** | Mark item / Invert marks / Clear all marked items |
-| `d` / `x` | **Safe Delete** | Safe deletion with confirmation modal and protected file guard |
-| `E` | **Report** | Export top 30 disk consumers audit to `quota_report.md` |
-| `q` | **Quit** | Exit `ft_ncdu` cleanly |
+|-----|--------|-------------|
+| `↑` / `k` | Up | Move cursor up |
+| `↓` / `j` | Down | Move cursor down |
+| `Enter` / `l` | Enter | Open directory |
+| `Backspace` / `h` | Back | Go up to parent directory |
+| `q` | Quit | Exit the application |
+| `/` | Search | Live filter current directory |
+| `s` | Sort | Toggle sorting by Size / Name / Date |
+| `c` | Clean Menu | Open the 9-Tier cleaning preset menu |
+| `g` | Goinfre Menu | Manage symlinking current dir to /goinfre |
+| `H` | Healer | Run the Station Healer to fix broken links |
+| `b` | Bootstrap | Run standard /goinfre bootstrap wizard |
+| `m` | Mark | Mark/unmark current file for batch action |
+| `M` | Mark All | Mark/unmark all files in directory |
+| `d` | Delete | Delete marked files (or current if none marked) |
+| `p` | Preview | Quick peek at text file contents |
+| `e` | Editor | Open file in $EDITOR (or vim) |
+| `t` | Terminal | Spawn a shell in the current directory |
+| `r` | Report | Generate a comprehensive storage report |
+| `?` | Help | Show all keyboard shortcuts |
 
 ---
 
-## 💻 Headless CLI Commands
+## 🖱️ GUI Quick Reference
+
+The Desktop GUI provides intuitive drop-down menus for all features:
+
+- **File Menu:** Refresh current view, open new paths, quit the application.
+- **Edit Menu:** Mark selected, mark all, clear marks.
+- **View Menu:** Toggle hidden files, change sorting mode, switch size display (Bytes/Human).
+- **Actions Menu:** Execute deletions, run 9-tier cleaning presets, nuke junk files, trigger Docker prune.
+- **Cluster Menu:** Symlink to goinfre, run the Station Healer, trigger the Bootstrap wizard, empty trash, manage zshrc exports.
+- **Tools Menu:** Open file previews, launch system editor, open terminal here, export storage reports.
+
+---
+
+## 💻 CLI Commands
+
+For the power users who live in the shell:
 
 ```bash
-# Run 9-Tier Native C Fast Cleaner (<0.2s)
-clean42
-ntcl13
+# Run the interactive TUI
+ft_ncdu [directory]
+
+# Run the Desktop GUI
+ft_ncdu-gui
+
+# Run standard clean preset immediately (no UI)
+clean42 
+# or
+ntcl13 
+# or 
 ft_ncdu -c
 
-# Dry-run simulation (No files removed)
+# Run standard clean but just show what would happen (Dry Run)
 clean42 --dry-run
-ft_ncdu -c --dry-run
+# or
 ft_ncdu -n
 
-# Run Station Healer in headless CLI
-clean42 --heal
+# Run the Station Healer (fix goinfre links)
 ft_ncdu --heal
 
-# Relocate heavy toolchains and AI model caches to /goinfre
+# Run the full Goinfre Bootstrap
 ft_ncdu --bootstrap
 
-# Print formatted quota report to stdout
-ft_ncdu --report
+# Generate a storage report for a specific path
+ft_ncdu --report [path]
 ```
 
-Bootstrap safely relocates Hugging Face, PyTorch, Triton, Whisper, Ollama,
-pip, uv, Node, Rust, Docker, and Flatpak data. Repeated runs are idempotent,
-and conflicting source/destination data is left untouched for manual review.
+---
+
+## 🏗️ Architecture
+
+```text
++-------------------+
+|      main.c       | (Entry point, args parsing)
++---------+---------+
+          |
++---------v---------+
+|    Core Engine    | -> 16 worker threads, strided indexing
+| (Scanner, Nav)    | -> Fixed 65,536 entry dual-buffer
++---------+---------+ -> POSIX st_dev mount shielding
+          |
++---------+---------+-------+-------------------+
+|                   |       |                   |
+v                   v       v                   v
+UI Subsystem     Action    Utils              CLI
+(ncurses TUI,    Subsystem (Security,        (Batch,
+ HUD, Events)    (Delete,   Format,           Healer,
+                 Goinfre)   Memory)           Presets)
+```
+
+- **16 Worker Threads:** Utilizes a strided indexing model to prevent lock contention while recursively reading directories.
+- **Fixed 65,536 Entry Dual-Buffer:** Ensures highly predictable memory footprint.
+- **Zero Dynamic Heap Allocation Per File:** Drastically reduces `malloc` overhead during deep scans.
+- **Mutex-Protected Shared State:** Thread-safe state transitions across the engine lifecycle.
 
 ---
 
-## 📚 Architectural Masterclass Guides (`docs/`)
+## 🔨 Building from Source
 
-The repository includes a 4-part systems programming curriculum designed for 42 students:
-* 🏛️ **[01_ARCHITECTURE.md](docs/01_ARCHITECTURE.md)**: Concurrency model, Pthread worker pool, POSIX system calls.
-* 📂 **[02_FILE_BY_FILE_GUIDE.md](docs/02_FILE_BY_FILE_GUIDE.md)**: Exhaustive line-by-line anatomy of every source file.
-* 🎓 **[03_HOW_TO_BUILD_THIS.md](docs/03_HOW_TO_BUILD_THIS.md)**: Step-by-step tutorial on building a systems utility from scratch.
-* 📐 **[04_NORMINETTE_PATTERNS.md](docs/04_NORMINETTE_PATTERNS.md)**: Advanced design patterns for 100% 42 Norminette compliance.
+To compile and install manually:
+
+```bash
+git clone https://github.com/laghzal49/ft_ncdu.git
+cd ft_ncdu
+make
+make install
+```
+
+**Dependencies:** `gcc` or `clang`, `make`, `libncurses-dev`, `python3-tk` (for the GUI).
+The `Makefile` automatically detects your platform (`macOS` uses `clang`, `Linux` uses `gcc`) and adjusts linker flags dynamically.
 
 ---
 
-## 📜 42 Norminette Standard Verification
+## 📚 Documentation
 
-Every single line of C code strictly adheres to **Norminette v3.3.59**:
+Dive deeper into the internals in the `docs/` directory:
+- `01_ARCHITECTURE.md` - Core engine and threading model
+- `02_FILE_BY_FILE_GUIDE.md` - Complete source code map
+- `03_HOW_TO_BUILD_THIS.md` - Build system and CI/CD
+- `04_NORMINETTE_PATTERNS.md` - How we bypassed 42's strict rules
+
+---
+
+## 📜 Norminette
+
 ```bash
 make norm
 ```
-*Output: Zero errors across all 19 `.c` files and 3 `.h` headers!*
+100% passing across all C source files according to the latest 42 Network V3 Norme.
 
 ---
 
 ## 👤 Author
-Developed with ❤️ by **tlaghzal** for **1337 Coding School & 42 Network** cadets worldwide.
+
+Developed by **tlaghzal** for 1337 Coding School & 42 Network.  
 GitHub: [https://github.com/laghzal49/ft_ncdu](https://github.com/laghzal49/ft_ncdu)
