@@ -6,10 +6,11 @@ A comprehensive Tkinter-based file browser and disk usage analyzer.
 
 import os
 import queue
+import shlex
 import sys
 
 # Early sanity check: some cluster workstations have a Python/GLIBC mismatch
-# that breaks C extensions (math, subprocess, tkinter). Catch it here with
+# that breaks standard-library C extensions and tkinter. Catch it here with
 # a clear message instead of a confusing traceback.
 try:
     import stat
@@ -32,7 +33,7 @@ except ImportError as _err:
               file=sys.stderr)
         print("  2. Reinstall Python to match your current GLIBC",
               file=sys.stderr)
-        print("  3. Use the TUI instead:  ft_ncdu  (no Python needed)",
+        print("  3. Use the TUI instead:  ft_ncdu-tui  (no Python needed)",
               file=sys.stderr)
     elif "tkinter" in str(_err).lower():
         print("Tkinter is not installed. Install it with:", file=sys.stderr)
@@ -43,9 +44,14 @@ except ImportError as _err:
         print(f"Missing module. Try:  pip install {_err.name or '???'}",
               file=sys.stderr)
     print("", file=sys.stderr)
-    print("The C terminal UI works without Python:  \033[1;36mft_ncdu\033[0m",
+    print("The C terminal UI works without Python:  \033[1;36mft_ncdu-tui\033[0m",
           file=sys.stderr)
     sys.exit(1)
+
+try:
+    import subprocess
+except ImportError:
+    subprocess = None
 
 # ----------------- CONSTANTS -----------------
 
@@ -141,6 +147,12 @@ def log_audit(action, target, details=''):
         pass
 
 def launch_process(command, cwd=None, shell=False, wait=False):
+    if subprocess is not None:
+        if wait:
+            return subprocess.call(command, cwd=cwd, shell=shell)
+        process = subprocess.Popen(command, cwd=cwd, shell=shell)
+        threading.Thread(target=process.wait, daemon=True).start()
+        return 0
     pid = os.fork()
     if pid == 0:
         try:
@@ -153,7 +165,9 @@ def launch_process(command, cwd=None, shell=False, wait=False):
             os._exit(127)
     if wait:
         _, status = os.waitpid(pid, 0)
-        return os.waitstatus_to_exitcode(status)
+        if os.WIFEXITED(status):
+            return os.WEXITSTATUS(status)
+        return 128 + os.WTERMSIG(status)
     threading.Thread(target=os.waitpid, args=(pid, 0), daemon=True).start()
     return 0
 
@@ -588,7 +602,7 @@ class App(tk.Tk):
                 info += "[i] Points to Goinfre\n"
                 
         try:
-            stat_info = node.path.stat(follow_symlinks=False)
+            stat_info = node.path.lstat()
             perms = stat.filemode(stat_info.st_mode)
             octal = oct(stat_info.st_mode)[-4:]
             info += f"\nPermissions: {perms} ({octal})"
@@ -699,8 +713,15 @@ class App(tk.Tk):
             messagebox.showinfo("Info", "Item is already a symlink.")
             return
             
+        try:
+            relative_path = node.path.relative_to(Path.home())
+        except ValueError:
+            messagebox.showerror(
+                "Outside Home",
+                "Only items inside your home directory can be moved to goinfre.")
+            return
         goinfre_path = Path(get_goinfre_path())
-        dest = goinfre_path / node.path.relative_to(Path.home())
+        dest = goinfre_path / relative_path
         
         if not messagebox.askyesno("Confirm Symlink", f"Move {node.name} to {dest} and symlink it?"):
             return
@@ -777,7 +798,11 @@ class App(tk.Tk):
         if not editor:
             messagebox.showerror("Error", "No editor found. Set $EDITOR environment variable.")
             return
-        launch_process([editor, str(node.path)])
+        command = shlex.split(editor)
+        if not command or not shutil.which(command[0]):
+            messagebox.showerror("Error", f"Editor '{editor}' not found.")
+            return
+        launch_process(command + [str(node.path)])
 
     def action_open_terminal(self):
         shell = os.environ.get('SHELL', '')
@@ -789,7 +814,22 @@ class App(tk.Tk):
         if not shell:
             messagebox.showerror("Error", "No shell found.")
             return
-        launch_process([shell], cwd=str(self.current_path))
+        if sys.platform == 'darwin':
+            launch_process(['open', '-a', 'Terminal', str(self.current_path)])
+            return
+        terminals = [
+            ('x-terminal-emulator', ['--working-directory', str(self.current_path)]),
+            ('gnome-terminal', ['--working-directory', str(self.current_path)]),
+            ('konsole', ['--workdir', str(self.current_path)]),
+            ('xfce4-terminal', ['--working-directory', str(self.current_path)]),
+            ('xterm', ['-e', shell, '-c',
+                       f'cd {shlex.quote(str(self.current_path))}; exec {shlex.quote(shell)}']),
+        ]
+        for terminal, args in terminals:
+            if shutil.which(terminal):
+                launch_process([terminal] + args)
+                return
+        messagebox.showerror("Error", "No supported terminal emulator found.")
 
     def action_custom_command(self):
         sel = self.tree.selection()
@@ -825,8 +865,6 @@ export HF_HOME="/goinfre/$USER/.cache/huggingface"
 export TORCH_HOME="/goinfre/$USER/.cache/torch" 
 export CARGO_HOME="/goinfre/$USER/.cargo"
 export DOCKER_CONFIG="/goinfre/$USER/.docker"
-alias clean42='ft_ncdu -c'
-alias ntcl13='ft_ncdu -c'
 alias goinfre='cd /goinfre/$USER'
 # --- end ft_ncdu ---
 """

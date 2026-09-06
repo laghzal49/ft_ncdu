@@ -12,17 +12,10 @@
 
 NAME        = ft_ncdu
 
-UNAME_S     := $(shell uname -s)
-
-ifeq ($(UNAME_S),Darwin)
-    CC      ?= clang
-    CFLAGS  ?= -Wall -Wextra -Werror -O3 -Iincludes
-    LDFLAGS ?= -lncurses -lpthread
-else
-    CC      ?= gcc
-    CFLAGS  ?= -Wall -Wextra -Werror -O3 -march=native -Iincludes
-    LDFLAGS ?= -lncurses -pthread
-endif
+CPPFLAGS    += -Iincludes
+CFLAGS     ?= -O3
+CFLAGS     += -Wall -Wextra -Werror -std=gnu99 -pthread
+LDLIBS     += -lncurses -pthread
 
 SRC_DIR     = src
 OBJ_DIR     = obj
@@ -59,11 +52,11 @@ OBJS        = $(SRCS:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.o)
 all: $(NAME)
 
 $(NAME): $(OBJS)
-	$(CC) $(CFLAGS) $(OBJS) -o $(NAME) $(LDFLAGS)
+	$(CC) $(CFLAGS) $(LDFLAGS) $(OBJS) -o $(NAME) $(LDLIBS)
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 	@mkdir -p $(dir $@)
-	$(CC) $(CFLAGS) -c $< -o $@
+	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
 
 clean:
 	rm -rf $(OBJ_DIR)
@@ -71,26 +64,32 @@ clean:
 fclean: clean
 	rm -f $(NAME)
 
-re: fclean all
+re:
+	$(MAKE) fclean
+	$(MAKE) all
 
 install: $(NAME)
 	@mkdir -p $(HOME)/.local/bin
-	cp -f $(NAME) $(HOME)/.local/bin/$(NAME)
+	cp -f $(NAME) $(HOME)/.local/bin/ft_ncdu-tui
 	cp -f $(NAME) $(HOME)/.local/bin/ntcl13
 	cp -f $(NAME) $(HOME)/.local/bin/clean42
-	@chmod +x $(HOME)/.local/bin/$(NAME) $(HOME)/.local/bin/ntcl13 $(HOME)/.local/bin/clean42
+	ln -sfn ft_ncdu-tui $(HOME)/.local/bin/ft_ncdu
+	@chmod +x $(HOME)/.local/bin/ft_ncdu-tui $(HOME)/.local/bin/ntcl13 $(HOME)/.local/bin/clean42
 	@echo "======================================================"
 	@echo "  Installed to $(HOME)/.local/bin:"
-	@echo "  -> ft_ncdu  : Interactive Disk & Quota Manager"
+	@echo "  -> ft_ncdu-tui : Interactive Disk & Quota Manager"
+	@echo "  -> ft_ncdu     : Default alias for ft_ncdu-tui"
 	@echo "  -> ntcl13   : Native C Fast 42 Cluster Cleaner"
 	@echo "  -> clean42  : Native C Fast 42 Cluster Cleaner"
 	@echo "======================================================"
 
 uninstall:
 	rm -f $(HOME)/.local/bin/$(NAME)
+	rm -f $(HOME)/.local/bin/ft_ncdu-tui
+	rm -f $(HOME)/.local/bin/ft_ncdu-gui
 	rm -f $(HOME)/.local/bin/ntcl13
 	rm -f $(HOME)/.local/bin/clean42
-	@echo "Uninstalled ft_ncdu, ntcl13, clean42 from $(HOME)/.local/bin"
+	@echo "Uninstalled ft_ncdu, ft_ncdu-tui, ft_ncdu-gui, ntcl13, clean42"
 
 norm:
 	@norminette src includes || true

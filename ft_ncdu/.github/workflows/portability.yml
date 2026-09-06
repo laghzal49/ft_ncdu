@@ -1,0 +1,68 @@
+name: Portability
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  native:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Ubuntu dependencies
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y libncurses-dev python3-tk
+      - name: Build TUI
+        run: make re
+      - name: Check GUI and installer
+        run: python3 -m py_compile scripts/ft_ncdu_gui.py && bash -n install.sh
+      - name: Test fresh installer and command names
+        env:
+          FT_NCDU_MODE: both
+          FT_NCDU_DEFAULT: gui
+          FT_NCDU_REPO_URL: ${{ github.workspace }}
+        run: |
+          test_root="$(mktemp -d)"
+          trap 'rm -rf "$test_root"' EXIT
+          cp install.sh "$test_root/install.sh"
+          HOME="$test_root/home" bash "$test_root/install.sh"
+          test "$(readlink "$test_root/home/.local/bin/ft_ncdu")" = ft_ncdu-gui
+          test -x "$test_root/home/.local/bin/ft_ncdu-tui"
+          test -x "$test_root/home/.local/bin/ft_ncdu-gui"
+
+  linux-distributions:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - image: fedora:latest
+            install: dnf install -y gcc make ncurses-devel python3
+          - image: archlinux:latest
+            install: pacman -Syu --needed --noconfirm base-devel ncurses python
+          - image: alpine:latest
+            install: apk add build-base ncurses-dev python3
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build in ${{ matrix.image }}
+        run: >-
+          docker run --rm
+          -v "$PWD:/src" -w /src
+          ${{ matrix.image }}
+          sh -c '${{ matrix.install }} && make re && python3 -m py_compile scripts/ft_ncdu_gui.py'
+
+  python-compatibility:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        image: ['python:3.6-slim', 'python:3-slim']
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compile with ${{ matrix.image }}
+        run: >-
+          docker run --rm
+          -v "$PWD:/source:ro"
+          ${{ matrix.image }}
+          sh -c 'cp -R /source /build && python3 -m py_compile /build/scripts/ft_ncdu_gui.py'

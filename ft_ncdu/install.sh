@@ -2,7 +2,7 @@
 
 set -eu
 
-REPO_URL="https://github.com/laghzal49/ft_ncdu.git"
+REPO_URL="${FT_NCDU_REPO_URL:-https://github.com/laghzal49/ft_ncdu.git}"
 INSTALL_DIR="${HOME}/.local/bin"
 TEMP_DIR="${TMPDIR:-/tmp}/ft_ncdu_install_$$"
 OS_TYPE="$(uname -s)"
@@ -39,21 +39,37 @@ cleanup()
 run_pkg_install()
 {
 	say "${YELLOW}==> Missing build dependencies.${RESET}"
-	say "Please install them manually (you may need to ask your system admin):"
 	if command -v apt-get >/dev/null 2>&1; then
-		say "  apt-get install -y $APT_PACKAGES"
+		run_as_root apt-get update || return 1
+		run_as_root apt-get install -y $APT_PACKAGES || return 1
 	elif command -v dnf >/dev/null 2>&1; then
-		say "  dnf install -y $DNF_PACKAGES"
+		run_as_root dnf install -y $DNF_PACKAGES || return 1
+	elif command -v yum >/dev/null 2>&1; then
+		run_as_root yum install -y $DNF_PACKAGES || return 1
 	elif command -v pacman >/dev/null 2>&1; then
-		say "  pacman -Sy --needed $PACMAN_PACKAGES"
+		run_as_root pacman -Syu --needed --noconfirm $PACMAN_PACKAGES || return 1
 	elif command -v zypper >/dev/null 2>&1; then
-		say "  zypper install $ZYPPER_PACKAGES"
+		run_as_root zypper --non-interactive install $ZYPPER_PACKAGES || return 1
 	elif command -v apk >/dev/null 2>&1; then
-		say "  apk add $APK_PACKAGES"
+		run_as_root apk add $APK_PACKAGES || return 1
 	else
-		say "  Install a C compiler, make, ncurses headers, and git."
+		say "${RED}No supported package manager was found.${RESET}"
+		say "Install a C compiler, make, ncurses headers, Python 3, Tk, and git."
+		return 1
 	fi
-	return 1
+}
+
+run_as_root()
+{
+	if [ "$(id -u)" -eq 0 ]; then
+		"$@"
+	elif command -v sudo >/dev/null 2>&1; then
+		sudo "$@"
+	else
+		say "${RED}Root access is required to install dependencies.${RESET}"
+		say "Run this installer again with sudo available, or install them manually."
+		return 1
+	fi
 }
 
 install_linux_dependencies()
@@ -89,11 +105,14 @@ dependencies_ready()
 	if [ "$MODE" != "gui" ]; then
 		command -v cc >/dev/null 2>&1 || return 1
 		command -v make >/dev/null 2>&1 || return 1
-		printf '#include <ncurses.h>\n' | cc -E - >/dev/null 2>&1 || return 1
+		printf '#include <ncurses.h>\nint main(void){initscr();endwin();return 0;}\n' \
+			| cc -x c - -o "$TEMP_DIR/ncurses-check" -lncurses \
+			>/dev/null 2>&1 || return 1
 	fi
 	if [ "$MODE" != "tui" ]; then
 		command -v python3 >/dev/null 2>&1 || return 1
-		python3 -c 'import tkinter' >/dev/null 2>&1 || return 1
+		python3 -c 'import sys, tkinter; raise SystemExit(sys.version_info < (3, 6))' \
+			>/dev/null 2>&1 || return 1
 	fi
 	return 0
 }
@@ -105,7 +124,8 @@ ensure_dependencies()
 	fi
 	say "${YELLOW}==>${RESET} Installing required build tools..."
 	if [ "$OS_TYPE" = "Darwin" ]; then
-		if ! xcode-select -p >/dev/null 2>&1; then
+		if { [ "$MODE" != "gui" ] || [ "$NEEDS_CLONE" -eq 1 ]; } \
+			&& ! xcode-select -p >/dev/null 2>&1; then
 			xcode-select --install
 			say "Finish the Apple command line tools installation, then rerun this installer."
 			exit 1
@@ -120,7 +140,9 @@ ensure_dependencies()
 			fi
 		fi
 	else
-		install_linux_dependencies
+		if ! install_linux_dependencies; then
+			exit 1
+		fi
 	fi
 	if ! dependencies_ready; then
 		say "${RED}Dependencies are still unavailable.${RESET}"
@@ -150,19 +172,43 @@ choose_mode()
 	esac
 }
 
+choose_default()
+{
+	if [ "$MODE" != "both" ]; then
+		DEFAULT_INTERFACE="$MODE"
+		return
+	fi
+	DEFAULT_INTERFACE="${FT_NCDU_DEFAULT:-}"
+	if [ -z "$DEFAULT_INTERFACE" ] && ( : < /dev/tty ) 2>/dev/null; then
+		printf '\nChoose what `ft_ncdu` starts:\n  1) TUI (terminal)\n' > /dev/tty
+		printf '  2) GUI (Python Tk)\nSelection [1]: ' > /dev/tty
+		read -r DEFAULT_CHOICE < /dev/tty || DEFAULT_CHOICE=1
+		case "$DEFAULT_CHOICE" in
+			2|gui|GUI) DEFAULT_INTERFACE="gui" ;;
+			*) DEFAULT_INTERFACE="tui" ;;
+		esac
+	fi
+	if [ -z "$DEFAULT_INTERFACE" ]; then
+		DEFAULT_INTERFACE="tui"
+	fi
+	case "$DEFAULT_INTERFACE" in
+		tui|gui) ;;
+		*) say "${RED}FT_NCDU_DEFAULT must be tui or gui.${RESET}"; exit 1 ;;
+	esac
+}
+
 select_build_directory()
 {
 	NEEDS_CLONE=0
-	if [ -f "$SCRIPT_DIR/Makefile" ] && [ -d "$SCRIPT_DIR/src" ]; then
+	if [ -f "$SCRIPT_DIR/Makefile" ] \
+		&& [ -f "$SCRIPT_DIR/includes/ft_ncdu.h" ] \
+		&& [ -f "$SCRIPT_DIR/scripts/ft_ncdu_gui.py" ]; then
 		BUILD_DIR="$SCRIPT_DIR"
-	elif [ -f "$SCRIPT_DIR/ft_ncdu/Makefile" ]; then
+	elif [ -f "$SCRIPT_DIR/ft_ncdu/Makefile" ] \
+		&& [ -f "$SCRIPT_DIR/ft_ncdu/includes/ft_ncdu.h" ]; then
 		BUILD_DIR="$SCRIPT_DIR/ft_ncdu"
-	elif [ -f "Makefile" ] && [ -d "src" ]; then
-		BUILD_DIR="$(pwd -P)"
-	elif [ -f "ft_ncdu/Makefile" ]; then
-		BUILD_DIR="$(pwd -P)/ft_ncdu"
 	else
-		BUILD_DIR="$TEMP_DIR/ft_ncdu"
+		BUILD_DIR="$TEMP_DIR/source"
 		NEEDS_CLONE=1
 	fi
 }
@@ -171,7 +217,7 @@ fetch_source()
 {
 	if [ "$NEEDS_CLONE" -eq 1 ]; then
 		say "${YELLOW}==>${RESET} Downloading ft_ncdu..."
-		git clone --depth 1 "$REPO_URL" "$TEMP_DIR"
+		git clone --depth 1 "$REPO_URL" "$BUILD_DIR"
 	fi
 }
 
@@ -200,16 +246,19 @@ trap cleanup EXIT HUP INT TERM
 
 say "${CYAN}${BOLD}ft_ncdu installer${RESET}"
 choose_mode
+choose_default
 say "${YELLOW}==>${RESET} Selected interface: ${MODE}"
 select_build_directory
+mkdir -p "$TEMP_DIR"
 ensure_dependencies
 fetch_source
 mkdir -p "$INSTALL_DIR"
 if [ "$MODE" != "gui" ]; then
 	JOBS="$(getconf _NPROCESSORS_ONLN 2>/dev/null || printf '2')"
 	say "${YELLOW}==>${RESET} Building TUI on ${OS_TYPE} with ${JOBS} jobs..."
+	make -C "$BUILD_DIR" fclean
 	make -C "$BUILD_DIR" -j"$JOBS"
-	for binary in ft_ncdu ntcl13 clean42; do
+	for binary in ft_ncdu-tui ntcl13 clean42; do
 		cp -f "$BUILD_DIR/ft_ncdu" "$INSTALL_DIR/$binary"
 		chmod 755 "$INSTALL_DIR/$binary"
 	done
@@ -217,22 +266,20 @@ fi
 if [ "$MODE" != "tui" ]; then
 	cp -f "$BUILD_DIR/scripts/ft_ncdu_gui.py" "$INSTALL_DIR/ft_ncdu-gui"
 	chmod 755 "$INSTALL_DIR/ft_ncdu-gui"
-	if [ "$MODE" = "gui" ]; then
-		cp -f "$BUILD_DIR/scripts/ft_ncdu_gui.py" "$INSTALL_DIR/ft_ncdu"
-		chmod 755 "$INSTALL_DIR/ft_ncdu"
-	fi
 fi
+ln -sfn "ft_ncdu-${DEFAULT_INTERFACE}" "$INSTALL_DIR/ft_ncdu"
 configure_shell
 
 say "${GREEN}${BOLD}Installed successfully.${RESET}"
 say "Installed in: ${INSTALL_DIR}"
 if [ "$MODE" = "both" ]; then
-	say "Run TUI: ft_ncdu"
+	say "Run TUI: ft_ncdu-tui"
 	say "Run GUI: ft_ncdu-gui"
+	say "Default: ft_ncdu -> ft_ncdu-${DEFAULT_INTERFACE}"
 elif [ "$MODE" = "gui" ]; then
-	say "Run GUI: ft_ncdu"
+	say "Run GUI: ft_ncdu or ft_ncdu-gui"
 else
-	say "Run TUI: ft_ncdu"
+	say "Run TUI: ft_ncdu or ft_ncdu-tui"
 fi
 say "If the command is not visible yet, restart your shell or run:"
 say "  export PATH=\"\$HOME/.local/bin:\$PATH\""

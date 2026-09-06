@@ -19,7 +19,17 @@ Get up and running instantly with our one-liner curl installation script:
 curl -fsSL https://raw.githubusercontent.com/laghzal49/ft_ncdu/main/install.sh | bash
 ```
 
-The interactive installer will prompt you to choose which components to install (TUI, GUI, or both). For automated headless deployments, you can set the `FT_NCDU_MODE` environment variable (e.g., `export FT_NCDU_MODE=both`). 
+The interactive installer prompts you to install the TUI, GUI, or both. Each
+interface has a stable command: `ft_ncdu-tui` and `ft_ncdu-gui`. The `ft_ncdu`
+command starts the interface selected as the default during installation.
+
+For automated installations, set `FT_NCDU_MODE` to `tui`, `gui`, or `both`.
+When installing both, set `FT_NCDU_DEFAULT` to `tui` or `gui`:
+
+```bash
+FT_NCDU_MODE=both FT_NCDU_DEFAULT=gui \
+  bash -c "$(curl -fsSL https://raw.githubusercontent.com/laghzal49/ft_ncdu/main/install.sh)"
+```
 
 The installation process compiles the C core natively, deploys the Python GUI securely, and installs all binaries and aliases directly into your `~/.local/bin/` directory.
 
@@ -159,8 +169,12 @@ The Desktop GUI provides intuitive drop-down menus for all features:
 For the power users who live in the shell:
 
 ```bash
-# Run the interactive TUI
-ft_ncdu [directory]
+# Run the selected default interface
+ft_ncdu
+
+# Run a specific interface
+ft_ncdu-tui [directory]
+ft_ncdu-gui
 
 # Run the Desktop GUI
 ft_ncdu-gui
@@ -228,8 +242,9 @@ make
 make install
 ```
 
-**Dependencies:** `gcc` or `clang`, `make`, `libncurses-dev`, `python3-tk` (for the GUI).
-The `Makefile` automatically detects your platform (`macOS` uses `clang`, `Linux` uses `gcc`) and adjusts linker flags dynamically.
+**Dependencies:** a C compiler, `make`, ncurses development headers, and
+Python 3.6 or newer with Tk for the GUI. The installer supports apt, dnf/yum,
+pacman, zypper, apk, and Homebrew on macOS.
 
 ---
 
