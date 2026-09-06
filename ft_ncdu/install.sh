@@ -36,16 +36,24 @@ cleanup()
 	fi
 }
 
-run_as_root()
+run_pkg_install()
 {
-	if [ "$(id -u)" -eq 0 ]; then
-		"$@"
-	elif command -v sudo >/dev/null 2>&1; then
-		sudo "$@"
+	say "${YELLOW}==> Missing build dependencies.${RESET}"
+	say "Please install them manually (you may need to ask your system admin):"
+	if command -v apt-get >/dev/null 2>&1; then
+		say "  apt-get install -y $APT_PACKAGES"
+	elif command -v dnf >/dev/null 2>&1; then
+		say "  dnf install -y $DNF_PACKAGES"
+	elif command -v pacman >/dev/null 2>&1; then
+		say "  pacman -Sy --needed $PACMAN_PACKAGES"
+	elif command -v zypper >/dev/null 2>&1; then
+		say "  zypper install $ZYPPER_PACKAGES"
+	elif command -v apk >/dev/null 2>&1; then
+		say "  apk add $APK_PACKAGES"
 	else
-		say "${RED}Missing build dependencies and sudo is unavailable.${RESET}"
-		return 1
+		say "  Install a C compiler, make, ncurses headers, and git."
 	fi
+	return 1
 }
 
 install_linux_dependencies()
@@ -70,21 +78,7 @@ install_linux_dependencies()
 			APK_PACKAGES="$APK_PACKAGES python3 py3-tkinter"
 		fi
 	fi
-	if command -v apt-get >/dev/null 2>&1; then
-		run_as_root apt-get update
-		run_as_root apt-get install -y $APT_PACKAGES
-	elif command -v dnf >/dev/null 2>&1; then
-		run_as_root dnf install -y $DNF_PACKAGES
-	elif command -v pacman >/dev/null 2>&1; then
-		run_as_root pacman -Sy --needed --noconfirm $PACMAN_PACKAGES
-	elif command -v zypper >/dev/null 2>&1; then
-		run_as_root zypper --non-interactive install $ZYPPER_PACKAGES
-	elif command -v apk >/dev/null 2>&1; then
-		run_as_root apk add $APK_PACKAGES
-	else
-		say "${RED}Unsupported package manager.${RESET} Install a C compiler, make, ncurses headers, and git."
-		return 1
-	fi
+	run_pkg_install
 }
 
 dependencies_ready()

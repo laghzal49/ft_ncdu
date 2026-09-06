@@ -18,15 +18,18 @@ static void	render_header_bar(int max_x)
 	char	status[32];
 	int		path_width;
 
-	safe_str_copy(status, g_state.is_scanning ? "SCANNING" : "READY",
-		sizeof(status));
-	path_width = max_x - 28;
+	if (g_state.is_scanning)
+		snprintf(status, sizeof(status), "SCANNING %c",
+			"-\\|/"[g_state.spinner_frame % 4]);
+	else
+		safe_str_copy(status, "READY", sizeof(status));
+	path_width = max_x - 32;
 	if (max_x < 54)
 		path_width = max_x - 13;
 	format_breadcrumbs(g_state.current_dir, breadcrumb_str, path_width);
 	attron(A_REVERSE | A_BOLD);
 	mvhline(0, 0, ' ', max_x);
-	mvprintw(0, 1, " %s ", APP_NAME);
+	mvprintw(0, 1, " %s v%s ", APP_NAME, APP_VERSION);
 	attroff(A_BOLD);
 	printw(" %s", breadcrumb_str);
 	if (max_x >= 54)

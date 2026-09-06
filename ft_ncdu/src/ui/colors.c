@@ -32,29 +32,27 @@ void	init_ui_colors(void)
 	init_pair(12, COLOR_WHITE, COLOR_RED);
 	init_pair(13, COLOR_BLACK, COLOR_YELLOW);
 	init_pair(14, COLOR_CYAN, COLOR_BLACK);
+	init_pair(15, COLOR_WHITE, COLOR_GREEN);
+	init_pair(16, COLOR_YELLOW, COLOR_RED);
 }
 
 static void	draw_box_borders(t_rect r)
 {
 	int	i;
 
-	mvaddstr(r.y, r.x, "+");
-	i = 1;
-	while (i < r.w - 1)
-		mvaddstr(r.y, r.x + i++, "-");
-	mvaddstr(r.y, r.x + r.w - 1, "+");
+	mvaddch(r.y, r.x, ACS_ULCORNER);
+	mvhline(r.y, r.x + 1, ACS_HLINE, r.w - 2);
+	mvaddch(r.y, r.x + r.w - 1, ACS_URCORNER);
 	i = 1;
 	while (i < r.h - 1)
 	{
-		mvaddstr(r.y + i, r.x, "|");
-		mvaddstr(r.y + i, r.x + r.w - 1, "|");
+		mvaddch(r.y + i, r.x, ACS_VLINE);
+		mvaddch(r.y + i, r.x + r.w - 1, ACS_VLINE);
 		i++;
 	}
-	mvaddstr(r.y + r.h - 1, r.x, "+");
-	i = 1;
-	while (i < r.w - 1)
-		mvaddstr(r.y + r.h - 1, r.x + i++, "-");
-	mvaddstr(r.y + r.h - 1, r.x + r.w - 1, "+");
+	mvaddch(r.y + r.h - 1, r.x, ACS_LLCORNER);
+	mvhline(r.y + r.h - 1, r.x + 1, ACS_HLINE, r.w - 2);
+	mvaddch(r.y + r.h - 1, r.x + r.w - 1, ACS_LRCORNER);
 }
 
 void	draw_box(t_rect r, const char *title, int color)

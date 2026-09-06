@@ -70,8 +70,9 @@ static void	render_target_metadata(t_rect rect, t_file_entry *entry,
 
 static void	render_command_deck(t_rect rect, int divider_y, int start_x)
 {
-	mvaddstr(divider_y, rect.x, "|");
-	mvaddstr(divider_y, rect.x + rect.w - 1, "|");
+	mvaddch(divider_y, rect.x, ACS_LTEE);
+	mvhline(divider_y, rect.x + 1, ACS_HLINE, rect.w - 2);
+	mvaddch(divider_y, rect.x + rect.w - 1, ACS_RTEE);
 	attron(COLOR_PAIR(1) | A_BOLD);
 	mvprintw(divider_y + 1, start_x, "QUICK KEYS");
 	wattroff(stdscr, COLOR_PAIR(1) | A_BOLD);
