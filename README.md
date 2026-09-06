@@ -13,16 +13,16 @@ curl -fsSL https://raw.githubusercontent.com/laghzal49/ft_ncdu/main/install.sh |
 The installer asks which interface to install before downloading dependencies
 or compiling:
 
-- **TUI**: native C and ncurses, installed as `ft_ncdu`
-- **GUI**: Python Tk desktop app, installed as `ft_ncdu`
-- **Both**: TUI as `ft_ncdu`, GUI as `ft_ncdu-gui`
+- **TUI**: native C and ncurses, installed as `ft_ncdu-tui`
+- **GUI**: Python Tk desktop app, installed as `ft_ncdu-gui`
+- **Both**: installs both stable names and asks which one `ft_ncdu` should start
 
 For a non-interactive installation:
 
 ```bash
 FT_NCDU_MODE=tui bash install.sh
 FT_NCDU_MODE=gui bash install.sh
-FT_NCDU_MODE=both bash install.sh
+FT_NCDU_MODE=both FT_NCDU_DEFAULT=gui bash install.sh
 ```
 
 The installer supports apt, dnf, pacman, zypper, apk, and macOS command-line
@@ -36,8 +36,8 @@ uses ASCII for content, terminal-native line drawing, reverse-video selection,
 and a details panel only when enough space is available.
 
 ```bash
-ft_ncdu
-ft_ncdu /path/to/inspect
+ft_ncdu-tui
+ft_ncdu-tui /path/to/inspect
 ```
 
 | Key | Action |
@@ -64,7 +64,8 @@ disk-space status, native scrolling, and read-only inspection.
 ft_ncdu-gui
 ```
 
-When only the GUI is installed, launch it with `ft_ncdu`.
+The `ft_ncdu` command launches whichever interface was selected as the default
+during installation.
 
 ## CLI
 

@@ -208,7 +208,7 @@ select_build_directory()
 		&& [ -f "$SCRIPT_DIR/ft_ncdu/includes/ft_ncdu.h" ]; then
 		BUILD_DIR="$SCRIPT_DIR/ft_ncdu"
 	else
-		BUILD_DIR="$TEMP_DIR/source"
+		BUILD_DIR=""
 		NEEDS_CLONE=1
 	fi
 }
@@ -217,7 +217,16 @@ fetch_source()
 {
 	if [ "$NEEDS_CLONE" -eq 1 ]; then
 		say "${YELLOW}==>${RESET} Downloading ft_ncdu..."
-		git clone --depth 1 "$REPO_URL" "$BUILD_DIR"
+		CLONE_DIR="$TEMP_DIR/source"
+		git clone --depth 1 "$REPO_URL" "$CLONE_DIR"
+		if [ -f "$CLONE_DIR/includes/ft_ncdu.h" ]; then
+			BUILD_DIR="$CLONE_DIR"
+		elif [ -f "$CLONE_DIR/ft_ncdu/includes/ft_ncdu.h" ]; then
+			BUILD_DIR="$CLONE_DIR/ft_ncdu"
+		else
+			say "${RED}Downloaded repository does not contain ft_ncdu.${RESET}"
+			exit 1
+		fi
 	fi
 }
 
