@@ -18,7 +18,7 @@ jobs:
       - name: Build TUI
         run: make re
       - name: Check GUI and installer
-        run: python3 -m py_compile scripts/ft_ncdu_gui.py && bash -n install.sh
+        run: python3 -m py_compile ft_ncdu/scripts/ft_ncdu_gui.py && bash -n install.sh
       - name: Test fresh installer and command names
         env:
           FT_NCDU_MODE: both
@@ -27,7 +27,7 @@ jobs:
         run: |
           test_root="$(mktemp -d)"
           trap 'rm -rf "$test_root"' EXIT
-          cp install.sh "$test_root/install.sh"
+          cp ft_ncdu/install.sh "$test_root/install.sh"
           HOME="$test_root/home" bash "$test_root/install.sh"
           test "$(readlink "$test_root/home/.local/bin/ft_ncdu")" = ft_ncdu-gui
           test -x "$test_root/home/.local/bin/ft_ncdu-tui"
@@ -49,7 +49,7 @@ jobs:
       - name: Build in ${{ matrix.image }}
         run: >-
           docker run --rm
-          -v "$PWD:/src" -w /src
+          -v "$PWD:/src" -w /src/ft_ncdu
           ${{ matrix.image }}
           sh -c '${{ matrix.install }} && make re && python3 -m py_compile scripts/ft_ncdu_gui.py'
 
@@ -65,4 +65,4 @@ jobs:
           docker run --rm
           -v "$PWD:/source:ro"
           ${{ matrix.image }}
-          sh -c 'cp -R /source /build && python3 -m py_compile /build/scripts/ft_ncdu_gui.py'
+          sh -c 'cp -R /source /build && python3 -m py_compile /build/ft_ncdu/scripts/ft_ncdu_gui.py'
